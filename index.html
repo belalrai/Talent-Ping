@@ -18,7 +18,7 @@ main{max-width:1200px;margin:0 auto;padding:20px;display:grid;gap:16px}
 .row{display:grid;grid-template-columns:2fr 1fr;gap:16px}@media(max-width:800px){.row{grid-template-columns:1fr}}
 #drop{border:2px dashed var(--bd);border-radius:10px;padding:28px;text-align:center;color:var(--mu);cursor:pointer}
 #drop.over{border-color:var(--ac);color:var(--ac)}
-textarea,input{width:100%;padding:8px;border:1px solid var(--bd);border-radius:6px;background:var(--bg);color:var(--tx);font:inherit}
+textarea,input,select{width:100%;padding:8px;border:1px solid var(--bd);border-radius:6px;background:var(--bg);color:var(--tx);font:inherit}
 textarea{min-height:110px;resize:vertical}label{font-size:12px;color:var(--mu);display:block;margin:8px 0 4px}
 button{padding:7px 12px;border:1px solid var(--bd);border-radius:6px;background:var(--card);color:var(--tx);cursor:pointer;font:inherit}
 button.p{background:var(--ac);color:#fff;border-color:var(--ac)}button:hover{opacity:.85}
@@ -39,6 +39,9 @@ td input{padding:4px 6px;min-width:110px}.tag{font-size:11px;padding:2px 8px;bor
     <div id="st"></div>
   </div>
   <div class="card">
+    <label>Campaign / template</label>
+    <div style="display:flex;gap:6px"><select id="tsel" onchange="pickT()"></select><button onclick="newT()" title="New template">+ New</button><button class="b" onclick="saveT()">💾 Save</button><button class="d" onclick="delT()">🗑</button></div>
+    <label>Campaign name</label><input id="tname" placeholder="e.g. Care Worker – London Oct">
     <label>Your message — use {first_name} and {full_name}</label>
     <textarea id="msg">Hello {first_name}, we received your CV and have an opportunity that matches your profile. Are you available to talk?</textarea>
   </div>
@@ -46,13 +49,13 @@ td input{padding:4px 6px;min-width:110px}.tag{font-size:11px;padding:2px 8px;bor
 <div class="card">
   <div class="bar">
     <input id="q" placeholder="Search candidates…">
-    <button onclick="addBlank()">+ Add manually</button>
+    <button onclick="addBlank()">+ Add manually</button><select id="sf" onchange="render()" style="width:auto"><option value="">All status</option><option value="new">New only</option><option value="sent">Messaged only</option></select><button onclick="resetStatus()">🔄 Reset status</button>
     <button onclick="exportCsv()">Export CSV</button>
     <button onclick="clearAll()">Clear all</button>
     <span id="count" style="color:var(--mu)"></span>
   </div>
   <div class="tw"><table>
-    <thead><tr><th>First name</th><th>Full name</th><th>Phone</th><th>Email</th><th>CV file</th><th>Status</th><th></th></tr></thead>
+    <thead><tr><th>First name</th><th>Full name</th><th>Phone</th><th>Email</th><th>CV file</th><th>Campaign</th><th>Status</th><th></th></tr></thead>
     <tbody id="tb"></tbody>
   </table></div>
 </div>
@@ -67,10 +70,11 @@ td input{padding:4px 6px;min-width:110px}.tag{font-size:11px;padding:2px 8px;bor
 <h3>Candidate record</h3><div id="rf" style="color:var(--mu);font-size:12px"></div>
 <div class="g2"><div><label>First name</label><input id="r_first"></div><div><label>Full name</label><input id="r_name"></div>
 <div><label>Phone</label><input id="r_phone"></div><div><label>Email</label><input id="r_email"></div></div>
+<label>Template / campaign</label><select id="r_tsel" onchange="pickRT()"></select>
 <label>Message (edit for this candidate only)</label><textarea id="r_msg"></textarea>
 <label>Notes</label><textarea id="r_notes" style="min-height:60px"></textarea>
 <div id="r_st" style="margin-top:8px;color:var(--mu);font-size:13px"></div>
-<div class="btns"><button onclick="closeRec()">Close</button><button class="b big" onclick="saveRec()">💾 Save</button><button class="p big" onclick="sendRec()">Send message</button></div>
+<div class="btns"><button id="r_cv" onclick="viewCv(cur)" style="margin-right:auto">📄 View CV</button><button onclick="closeRec()">Close</button><button class="b big" onclick="saveRec()">💾 Save</button><button class="p big" onclick="sendRec()">Send message</button></div>
 </div></div>
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -83,15 +87,16 @@ const SB_URL='https://alvdbsfxehjuprklrbrz.supabase.co',SB_KEY='eyJhbGciOiJIUzI1
 // =====================================================================
 const CLOUD=!!(SB_URL&&SB_KEY);
 const sb=CLOUD?supabase.createClient(SB_URL,SB_KEY):null;
-let user=null,snap={},ch=null,mode='in';
-const row=c=>({id:c.id,first:c.first||'',name:c.name||'',phone:c.phone||'',email:c.email||'',file:c.file||'',status:c.status||'new',notes:c.notes||'',msg:c.msg||'',sent_at:c.sentAt||''});
-const fromRow=r=>({id:r.id,first:r.first,name:r.name,phone:r.phone,email:r.email,file:r.file,status:r.status,notes:r.notes,msg:r.msg,sentAt:r.sent_at});
+let user=null,snap={},ch=null,mode='in',pth={},LF={},T=[],curT='';
+try{if(!CLOUD)T=JSON.parse(localStorage.getItem('tp:tpl')||'[]');curT=localStorage.getItem('tp:cur')||''}catch(e){}
+const row=c=>({id:c.id,first:c.first||'',name:c.name||'',phone:c.phone||'',email:c.email||'',file:c.file||'',status:c.status||'new',notes:c.notes||'',msg:c.msg||'',sent_at:c.sentAt||'',campaign:c.campaign||'',cv_path:c.cvPath||''});
+const fromRow=r=>({id:r.id,first:r.first,name:r.name,phone:r.phone,email:r.email,file:r.file,status:r.status,notes:r.notes,msg:r.msg,sentAt:r.sent_at,campaign:r.campaign||'',cvPath:r.cv_path||''});
 async function pushCloud(){
   const now={},up=[];
-  for(const c of C){const j=JSON.stringify(row(c));now[c.id]=j;if(snap[c.id]!==j)up.push({...row(c),updated_by:user.email})}
+  for(const c of C){pth[c.id]=c.cvPath||'';const j=JSON.stringify(row(c));now[c.id]=j;if(snap[c.id]!==j)up.push({...row(c),updated_by:user.email})}
   const del=Object.keys(snap).filter(id=>!(id in now));snap=now;
   if(up.length){const{error}=await sb.from('candidates').upsert(up);if(error)toast('Save failed: '+error.message,1)}
-  if(del.length){const{error}=await sb.from('candidates').delete().in('id',del);if(error)toast('Delete failed: '+error.message,1)}
+  if(del.length){const{error}=await sb.from('candidates').delete().in('id',del);if(error)toast('Delete failed: '+error.message,1);const gone=del.map(id=>pth[id]).filter(Boolean);if(gone.length)sb.storage.from('cvs').remove(gone)}
 }
 const save=()=>{
   if(CLOUD){if(user)pushCloud();return}
@@ -104,7 +109,7 @@ async function load(){
     if(error){toast('Load failed: '+error.message,1);return}
     all=all.concat(data);if(data.length<1000)break;from+=1000;
   }
-  C=all.map(fromRow);snap={};C.forEach(c=>snap[c.id]=JSON.stringify(row(c)));render();
+  C=all.map(fromRow);snap={};pth={};C.forEach(c=>pth[c.id]=c.cvPath||'');C.forEach(c=>snap[c.id]=JSON.stringify(row(c)));render();
 }
 function setMode(m){mode=m;$('a_name_w').style.display=m==='up'?'block':'none';$('a_go').textContent=m==='up'?'Create account':'Sign in';$('a_t_in').className=m==='in'?'b':'';$('a_t_up').className=m==='up'?'b':'';$('a_msg').textContent=''}
 async function authGo(){
@@ -119,11 +124,11 @@ async function logout(){await sb.auth.signOut()}
 function enter(u){
   user=u;$('auth').classList.remove('on');$('ua').style.display='flex';
   $('who').textContent=(u.user_metadata&&u.user_metadata.full_name)||u.email;
-  load();
+  load();loadT(true);
   if(!ch)ch=sb.channel('cand').on('postgres_changes',{event:'*',schema:'public',table:'candidates'},()=>{if(!cur&&!(document.activeElement&&document.activeElement.closest('td')))load()}).subscribe();
 }
 async function boot(){
-  if(!CLOUD){render();return}
+  if(!CLOUD){fillSelects(true);render();return}
   $('auth').classList.add('on');
   const{data}=await sb.auth.getSession();
   if(data.session)enter(data.session.user);
@@ -132,7 +137,7 @@ async function boot(){
     if(!ses&&user){user=null;C=[];snap={};if(ch){sb.removeChannel(ch);ch=null}$('ua').style.display='none';$('auth').classList.add('on');render()}
   });
 }
-window.addEventListener('focus',()=>{if(CLOUD&&user&&!cur)load()});
+window.addEventListener('focus',()=>{if(CLOUD&&user&&!cur){load();loadT()}});
 const uid=()=>Math.random().toString(36).slice(2,10);
 
 async function readText(f){
@@ -171,13 +176,21 @@ async function handle(files){
   let ok=0;
   for(const f of files){
     $('st').textContent=`Parsing ${f.name}…`;
-    try{C.unshift(parse(await readText(f),f.name));ok++}catch(e){console.error(e)}
+    try{
+      const c=parse(await readText(f),f.name);
+      if(CLOUD&&user){const p=c.id+'_'+f.name.replace(/[^\w.\-]/g,'_');const{error}=await sb.storage.from('cvs').upload(p,f,{upsert:true});if(!error)c.cvPath=p;else toast('CV file not stored: '+error.message,1)}
+      else LF[c.id]=f;
+      C.unshift(c);ok++;
+    }catch(e){console.error(e)}
   }
   save();render();$('st').textContent=`Parsed ${ok} of ${files.length} file(s). Click a candidate to open the record.`;
   if(ok===1)openRec(C[0].id);
 }
 
-const tpl=c=>$('msg').value.replaceAll('{first_name}',c.first||'').replaceAll('{full_name}',c.name||'');
+const fmt=(b,c)=>b.replaceAll('{first_name}',c.first||'').replaceAll('{full_name}',c.name||'');
+const tpl=c=>fmt($('msg').value,c);
+const curCampaign=()=>{const t=T.find(x=>x.id===curT);return t?t.campaign:'Custom'};
+const campOf=id=>{const t=T.find(x=>x.id===id);return t?t.campaign:'Custom'};
 let ext=false;
 window.addEventListener('message',e=>{if(e.data&&e.data.type==='CVDESK_READY'){ext=true;const b=$('extb');b.textContent='✅ WhatsApp extension connected';b.style.background='#16a34a'}});
 function pingExt(){window.postMessage({type:'CVDESK_PING'},'*')}
@@ -194,13 +207,67 @@ function waLink(c,text){
 }
 function send(id){
   const c=C.find(x=>x.id===id);if(!c||!c.phone)return alert('No phone number.');
-  openWA(waLink(c));c.status='sent';save();render();
+  openWA(waLink(c));c.status='sent';c.campaign=curCampaign();c.sentAt=new Date().toLocaleString();c.msg=tpl(c);save();render();
+}
+function visible(){const q=$('q').value.toLowerCase(),sf=$('sf').value;return C.filter(c=>(!q||((c.name||'')+(c.email||'')+(c.phone||'')+(c.campaign||'')).toLowerCase().includes(q))&&(!sf||(sf==='sent')===(c.status==='sent')))}
+function resetStatus(){
+  const l=visible().filter(c=>c.status==='sent');
+  if(!l.length)return toast('Nothing to reset',1);
+  if(!confirm(`Reset ${l.length} messaged candidate(s) back to "new"? Only the ones currently shown in the list.`))return;
+  l.forEach(c=>{c.status='new';c.sentAt='';c.campaign='';c.msg=''});save();render();toast('✓ Status reset');
+}
+const hasCv=c=>!!(c.cvPath||LF[c.id]);
+async function viewCv(id){
+  const c=C.find(x=>x.id===id);if(!c)return;
+  const w=window.open('','_blank');
+  try{
+    let url;
+    if(c.cvPath&&CLOUD){const{data,error}=await sb.storage.from('cvs').createSignedUrl(c.cvPath,600);if(error)throw error;url=data.signedUrl}
+    else if(LF[id])url=URL.createObjectURL(LF[id]);
+    else throw new Error('No CV file stored for this candidate');
+    (w||window).location=url;
+  }catch(e){if(w)w.close();toast(e.message||'Could not open CV',1)}
+}
+function applyT(){const t=T.find(x=>x.id===curT);if(t){$('tname').value=t.campaign;$('msg').value=t.body}}
+function fillSelects(apply){
+  const o='<option value="">✏️ Custom message (not saved)</option>'+T.map(t=>`<option value="${t.id}">${esc(t.campaign)}</option>`).join('');
+  $('tsel').innerHTML=o;$('r_tsel').innerHTML=o;
+  if(!T.find(x=>x.id===curT))curT='';
+  $('tsel').value=curT;$('r_tsel').value=curT;
+  if(apply)applyT();
+}
+function pickT(){curT=$('tsel').value;try{localStorage.setItem('tp:cur',curT)}catch(e){}if(curT)applyT();else $('tname').value=''}
+function pickRT(){const c=C.find(x=>x.id===cur),t=T.find(x=>x.id===$('r_tsel').value);if(c&&t)$('r_msg').value=fmt(t.body,{first:$('r_first').value,name:$('r_name').value})}
+function newT(){curT='';$('tsel').value='';$('tname').value='';$('tname').focus();toast('Write campaign name + message, then press Save')}
+async function persistT(t){
+  if(CLOUD){const{error}=await sb.from('templates').upsert({id:t.id,campaign:t.campaign,body:t.body,updated_by:user.email});if(error)toast('Template save failed: '+error.message,1)}
+  else try{localStorage.setItem('tp:tpl',JSON.stringify(T))}catch(e){}
+}
+async function saveT(){
+  const name=$('tname').value.trim(),body=$('msg').value;
+  if(!name)return toast('Enter a campaign name first',1);
+  let t=T.find(x=>x.id===curT);
+  if(t){t.campaign=name;t.body=body}else{t={id:uid(),campaign:name,body};T.push(t);curT=t.id}
+  try{localStorage.setItem('tp:cur',curT)}catch(e){}
+  await persistT(t);fillSelects();toast('✓ Template saved');
+}
+async function delT(){
+  const t=T.find(x=>x.id===curT);if(!t)return toast('Select a saved template first',1);
+  if(!confirm(`Delete template "${t.campaign}"?`))return;
+  T=T.filter(x=>x!==t);curT='';
+  if(CLOUD){await sb.from('templates').delete().eq('id',t.id)}else try{localStorage.setItem('tp:tpl',JSON.stringify(T))}catch(e){}
+  fillSelects();toast('Template deleted');
+}
+async function loadT(apply){
+  const{data,error}=await sb.from('templates').select('*').order('created_at');
+  if(error){toast('Templates: '+error.message,1);return}
+  T=data.map(r=>({id:r.id,campaign:r.campaign,body:r.body}));fillSelects(apply);
 }
 let cur=null;
 function openRec(id){
   const c=C.find(x=>x.id===id);if(!c)return;cur=id;
   ['first','name','phone','email'].forEach(k=>$('r_'+k).value=c[k]||'');
-  $('r_msg').value=c.msg||tpl(c);$('r_notes').value=c.notes||'';
+  $('r_tsel').value=T.find(x=>x.id===curT)?curT:'';$('r_msg').value=(c.status==='sent'&&c.msg)?c.msg:tpl(c);$('r_cv').style.display=hasCv(c)?'':'none';$('r_notes').value=c.notes||'';
   $('rf').textContent='CV: '+c.file;
   $('r_st').textContent=c.status==='sent'?'✓ Messaged'+(c.sentAt?' on '+c.sentAt:''):'Not messaged yet';
   $('md').classList.add('on');
@@ -218,7 +285,7 @@ function sendRec(){
   c.notes=$('r_notes').value;c.msg=$('r_msg').value;
   if(!c.phone)return alert('Add a phone number first.');
   openWA(waLink(c,c.msg));
-  c.status='sent';c.sentAt=new Date().toLocaleString();save();
+  c.status='sent';c.campaign=campOf($('r_tsel').value);c.sentAt=new Date().toLocaleString();save();
   $('r_st').textContent='✓ Opened in WhatsApp Web — press Send there. Marked as messaged.';
 }
 $('md').onclick=e=>{if(e.target.id==='md')closeRec()};
@@ -234,7 +301,7 @@ function exportCsv(){
 const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
 function render(keep){
   const q=$('q').value.toLowerCase();
-  const list=C.filter(c=>!q||(c.name+c.email+c.phone).toLowerCase().includes(q));
+  const list=visible();
   const kb=Math.round(JSON.stringify(C).length/1024);
   $('count').textContent=`${list.length} shown · ${CLOUD?'shared team database':'storage '+kb+' KB of ~5,000 KB'}`;
   $('stats').innerHTML=`<span class="chip">👥 ${C.length} candidates</span><span class="chip">✅ ${C.filter(x=>x.status==='sent').length} messaged</span><span class="chip">🆕 ${C.filter(x=>x.status!=='sent').length} new</span>`;
@@ -245,9 +312,9 @@ function render(keep){
     <td><input value="${esc(c.phone)}" onchange="edit('${c.id}','phone',this.value)"></td>
     <td><input value="${esc(c.email)}" onchange="edit('${c.id}','email',this.value)"></td>
     <td>${esc(c.file)}</td>
-    <td><span class="tag ${c.status==='sent'?'s':''}">${c.status==='sent'?'messaged':'new'}</span></td>
-    <td><button class="b" onclick="openRec('${c.id}')">Open record</button> <button class="p" onclick="send('${c.id}')">Send message</button> <button class="d" onclick="del('${c.id}')">✕</button></td></tr>`).join('')
-    ||'<tr><td colspan="7" style="color:var(--mu);padding:20px">No candidates yet. Upload some CVs above.</td></tr>';
+    <td>${esc(c.campaign)}</td><td><span class="tag ${c.status==='sent'?'s':''}">${c.status==='sent'?'messaged':'new'}</span></td>
+    <td><button class="b" onclick="openRec('${c.id}')">Open record</button> ${hasCv(c)?`<button onclick="viewCv('${c.id}')">📄 CV</button>`:''} <button class="p" onclick="send('${c.id}')">Send message</button> <button class="d" onclick="del('${c.id}')">✕</button></td></tr>`).join('')
+    ||'<tr><td colspan="8" style="color:var(--mu);padding:20px">No candidates yet. Upload some CVs above.</td></tr>';
 }
 const drop=$('drop'),fi=$('file');
 drop.onclick=()=>fi.click();fi.onchange=()=>{handle([...fi.files]);fi.value=''};
