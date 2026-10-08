@@ -29,18 +29,63 @@ td input{padding:4px 6px;min-width:110px}.tag{font-size:11px;padding:2px 8px;bor
 #md{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:16px;z-index:9}#md.on{display:flex}#box{background:var(--card);border-radius:12px;padding:20px;width:100%;max-width:560px;max-height:92vh;overflow:auto}#box h3{margin:0 0 4px}.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.btns{display:flex;gap:8px;margin-top:14px;justify-content:flex-end}.big{padding:10px 18px;font-size:15px}
 #st{color:var(--mu);font-size:13px;margin-top:8px}
 </style>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style id="theme">
+:root{--bg:#f1f4f6;--card:#fff;--tx:#17232e;--mu:#667583;--bd:#dde4e9;--ac:#0b7a5e;--ac2:#096650;--nv:#13293d;--soft:#f6f8fa;--amber:#9a5b05;--amberbg:#fdf2dc;--ok:#0b7a5e;--okbg:#e2f3ed;--bad:#c0392b}
+@media(prefers-color-scheme:dark){:root{--bg:#0e151b;--card:#17212b;--tx:#e6ecf1;--mu:#8c9eac;--bd:#2a3743;--ac:#2fb58f;--ac2:#27a07e;--nv:#0a1016;--soft:#1c2833;--amber:#f0b45a;--amberbg:#3a2d17;--ok:#52d3aa;--okbg:#143429;--bad:#ef6a5b}}
+body{font-family:'Hanken Grotesk',system-ui,-apple-system,'Segoe UI',sans-serif;font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+header{background:var(--nv);padding:12px 28px;gap:14px;flex-wrap:wrap}
+.brand{font-size:19px;font-weight:700;letter-spacing:-.2px}.tag2{font-size:12px;opacity:.6}
+.chip{background:#ffffff14;border:1px solid #ffffff22;font-weight:500;font-size:12.5px;padding:4px 12px}
+#stats{gap:6px}#stats .chip{background:transparent;border-color:transparent;opacity:.85;padding:4px 8px}#stats .chip b{font-weight:700;font-size:14px;margin-right:3px}
+#ua{gap:10px}#ua button{padding:5px 12px}
+main{max-width:1240px;padding:26px 28px 48px;gap:20px}
+.card,.card:nth-child(2){border:1px solid var(--bd);border-top:1px solid var(--bd);border-radius:14px;padding:22px;box-shadow:0 1px 2px rgba(19,41,61,.05)}
+.ct{font-size:16px;font-weight:700;margin:0 0 14px;letter-spacing:-.1px}
+label{font-size:12.5px;font-weight:600;color:var(--tx);margin:14px 0 5px}
+input,textarea,select{border-radius:8px;border:1px solid var(--bd);background:var(--card);padding:9px 11px;font-family:inherit;transition:border-color .15s,box-shadow .15s}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--ac);box-shadow:0 0 0 3px color-mix(in srgb,var(--ac) 22%,transparent)}
+button{font-family:inherit;border-radius:8px;padding:8px 14px;font-weight:600;font-size:13px;background:var(--card);border:1px solid var(--bd);color:var(--tx);transition:background .15s,border-color .15s}
+button:hover{opacity:1;background:var(--soft)}button:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+button.p{background:var(--ac);border-color:var(--ac);color:#fff}button.p:hover{background:var(--ac2)}
+button.b{background:var(--okbg);border-color:transparent;color:var(--ok)}button.b:hover{background:color-mix(in srgb,var(--ok) 20%,var(--card))}
+button.d{background:transparent;border-color:transparent;color:var(--bad)}button.d:hover{background:var(--soft)}
+#drop{border:1.5px dashed #b4c1cc;border-radius:12px;padding:36px 20px;background:var(--soft);color:var(--mu);transition:all .15s}
+#drop b{display:block;color:var(--tx);font-size:15px;margin:8px 0 2px}#drop svg{color:var(--ac)}
+#drop:hover,#drop.over{border-color:var(--ac);background:var(--okbg);color:var(--ac)}
+.bar{gap:10px;margin-bottom:14px}.bar input{max-width:280px}#count{font-size:13px}
+.tw{border:1px solid var(--bd);border-radius:10px}
+table{border-collapse:separate;border-spacing:0}
+th{background:var(--soft);color:var(--mu);font-size:12px;font-weight:600;padding:10px 10px;border-bottom:1px solid var(--bd)}
+td{padding:7px 10px;border-bottom:1px solid var(--bd)}tbody tr:last-child td{border-bottom:0}tbody tr:hover td{background:var(--soft)}
+td input{border-color:transparent;background:transparent;padding:6px 8px;min-width:120px}td input:hover{border-color:var(--bd);background:var(--card)}
+.tag{background:var(--amberbg);color:var(--amber);font-weight:600;padding:3px 11px;border-radius:999px;font-size:12px}
+.tag.s{background:var(--okbg);color:var(--ok)}
+.tag::before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:currentColor;margin-right:6px;vertical-align:1px}
+#md,#cvm{backdrop-filter:blur(2px)}#md{background:rgba(12,22,32,.55)}
+#box{border-radius:16px;padding:26px;max-width:600px;box-shadow:0 24px 70px rgba(0,0,0,.3)}#box h3{font-size:19px;letter-spacing:-.2px}
+#md.on #box{animation:pop .18s ease-out}@keyframes pop{from{opacity:0;transform:translateY(8px) scale(.985)}}
+#auth{background:radial-gradient(1100px 600px at 15% 0%,#1f5668 0,#13293d 62%)}
+#ab{border-radius:16px;padding:32px;max-width:400px;box-shadow:0 24px 70px rgba(0,0,0,.35)}
+#ab h2{background:none;color:var(--tx);-webkit-text-fill-color:currentColor;font-size:26px;letter-spacing:-.4px}
+#toast{border-radius:10px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
 </head>
 <body>
-<header><svg width="40" height="40" viewBox="0 0 40 40"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#25d366"/><stop offset="1" stop-color="#6366f1"/></linearGradient></defs><rect width="40" height="40" rx="11" fill="url(#lg)"/><path d="M11 9h13l6 6v11a3 3 0 0 1-3 3H11a3 3 0 0 1-3-3V12a3 3 0 0 1 3-3z" fill="#fff" opacity=".95"/><circle cx="17" cy="17" r="3" fill="#6366f1"/><path d="M11.5 25c.8-3 3-4 5.500-4s4.700 1 5.500 4z" fill="#6366f1"/><path d="M24 24h9a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-3l-3 3v-3h-3a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2z" fill="#25d366" stroke="#fff" stroke-width="1.500"/></svg><div><div class="brand">TalentPing</div><div class="tag2">Parse CVs · Ping candidates on WhatsApp</div></div><span id="extb" class="chip" style="cursor:pointer" title="Click to re-check" onclick="pingExt()">🔌 WhatsApp extension: not detected</span><div id="stats"></div><div id="ua"><span id="who"></span><button onclick="logout()">Sign out</button></div></header>
+<header><svg width="40" height="40" viewBox="0 0 40 40"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3ed6a8"/><stop offset="1" stop-color="#0b7a5e"/></linearGradient></defs><rect width="40" height="40" rx="11" fill="url(#lg)"/><path d="M11 9h13l6 6v11a3 3 0 0 1-3 3H11a3 3 0 0 1-3-3V12a3 3 0 0 1 3-3z" fill="#fff" opacity=".95"/><circle cx="17" cy="17" r="3" fill="#0b7a5e"/><path d="M11.5 25c.8-3 3-4 5.500-4s4.700 1 5.500 4z" fill="#0b7a5e"/><path d="M24 24h9a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-3l-3 3v-3h-3a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2z" fill="#25d366" stroke="#fff" stroke-width="1.500"/></svg><div><div class="brand">TalentPing</div><div class="tag2">Parse CVs · Ping candidates on WhatsApp</div></div><span id="extb" class="chip" style="cursor:pointer" title="Click to re-check" onclick="pingExt()">WhatsApp extension not detected</span><div id="stats"></div><div id="ua"><span id="who"></span><button onclick="logout()">Sign out</button></div></header>
 <main>
 <div class="row">
   <div class="card">
-    <div id="drop">Drop CVs here or click to select (PDF, DOCX, TXT — bulk supported)</div>
+    <div class="ct">Upload CVs</div>
+    <div id="drop"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0L7 9m5-5 5 5M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg><b>Drop CVs here, or click to browse</b>PDF, DOCX or TXT. Upload one or many at once.</div>
     <input id="file" type="file" multiple accept=".pdf,.docx,.txt" hidden>
     <div id="st"></div>
   </div>
   <div class="card">
-    <label>Campaign / template</label>
+    <div class="ct">Message template</div>
+    <label style="margin-top:0">Saved templates</label>
     <div style="display:flex;gap:6px"><select id="tsel" onchange="pickT()"></select><button onclick="newT()" title="New template">+ New</button><button class="b" onclick="saveT()">💾 Save</button><button class="d" onclick="delT()">🗑</button></div>
     <label>Campaign name</label><input id="tname" placeholder="e.g. Care Worker – London Oct">
     <label>Your message — use {first_name} and {full_name}</label>
@@ -48,6 +93,7 @@ td input{padding:4px 6px;min-width:110px}.tag{font-size:11px;padding:2px 8px;bor
   </div>
 </div>
 <div class="card">
+  <div class="ct">Candidates</div>
   <div class="bar">
     <input id="q" placeholder="Search candidates…">
     <button onclick="addBlank()">+ Add manually</button><select id="sf" onchange="render()" style="width:auto"><option value="">All status</option><option value="new">New only</option><option value="sent">Messaged only</option></select><button onclick="resetStatus()">🔄 Reset status</button>
@@ -196,7 +242,7 @@ const tpl=c=>fmt($('msg').value,c);
 const curCampaign=()=>{const t=T.find(x=>x.id===curT);return t?t.campaign:'Custom'};
 const campOf=id=>{const t=T.find(x=>x.id===id);return t?t.campaign:'Custom'};
 let ext=false;
-window.addEventListener('message',e=>{if(e.data&&e.data.type==='CVDESK_READY'){ext=true;const b=$('extb');b.textContent='✅ WhatsApp extension connected';b.style.background='#16a34a'}});
+window.addEventListener('message',e=>{if(e.data&&e.data.type==='CVDESK_READY'){ext=true;const b=$('extb');b.textContent='WhatsApp extension connected';b.style.background='#0b7a5e'}});
 function pingExt(){window.postMessage({type:'CVDESK_PING'},'*')}
 pingExt();[300,1000,2500,5000].forEach(t=>setTimeout(pingExt,t));
 function openWA(url){ext?window.postMessage({type:'CVDESK_SEND',url},'*'):window.open(url,'whatsapp_web')}
@@ -301,7 +347,7 @@ function openRec(id){
 function collectRec(){const c=C.find(x=>x.id===cur);if(!c)return null;['first','name','phone','email'].forEach(k=>c[k]=$('r_'+k).value.trim());c.notes=$('r_notes').value;c.msg=$('r_msg').value;return c}
 ['first','name','phone','email','notes','msg'].forEach(k=>$('r_'+k).addEventListener('input',()=>{if(collectRec())later()}));
 function closeRec(){if(collectRec())flushSave();$('md').classList.remove('on');cur=null;render()}
-function toast(t,bad){const e=$('toast');e.style.background=bad?'#dc2626':'#16a34a';e.textContent=t;e.style.display='block';setTimeout(()=>e.style.display='none',1800)}
+function toast(t,bad){const e=$('toast');e.style.background=bad?'#c0392b':'#0b7a5e';e.textContent=t;e.style.display='block';setTimeout(()=>e.style.display='none',1800)}
 function saveRec(){
   const c=C.find(x=>x.id===cur);if(!c)return;
   ['first','name','phone','email'].forEach(k=>c[k]=$('r_'+k).value.trim());
@@ -337,7 +383,7 @@ function render(keep){
   const list=visible();
   const kb=Math.round(JSON.stringify(C).length/1024);
   $('count').textContent=`${list.length} shown · ${CLOUD?'shared team database':'storage '+kb+' KB of ~5,000 KB'}`;
-  $('stats').innerHTML=`<span class="chip">👥 ${C.length} candidates</span><span class="chip">✅ ${C.filter(x=>x.status==='sent').length} messaged</span><span class="chip">🆕 ${C.filter(x=>x.status!=='sent').length} new</span>`;
+  $('stats').innerHTML=`<span class="chip"><b>${C.length}</b> candidates</span><span class="chip"><b>${C.filter(x=>x.status==='sent').length}</b> messaged</span><span class="chip"><b>${C.filter(x=>x.status!=='sent').length}</b> new</span>`;
   if(keep&&document.activeElement&&document.activeElement.tagName==='INPUT'&&document.activeElement.closest('td'))return;
   $('tb').innerHTML=list.map(c=>`<tr>
     <td><input value="${esc(c.first)}" oninput="edit('${c.id}','first',this.value)" onchange="flushSave()"></td>
