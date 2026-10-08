@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TalentPing – CV parser, WhatsApp & email outreach</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--tx:#1b1f24;--mu:#6b7280;--bd:#e3e6ea;--ac:#128c7e}
+@media(prefers-color-scheme:dark){:root{--bg:#14171a;--card:#1d2125;--tx:#e8eaed;--mu:#9aa0a6;--bd:#2d3338;--ac:#25d366}}
+*{box-sizing:border-box}body{margin:0;font:14px system-ui,sans-serif;background:var(--bg);color:var(--tx)}
+header{padding:14px 24px;background:linear-gradient(120deg,#6366f1,#8b5cf6 45%,#ec4899);color:#fff;display:flex;align-items:center;gap:12px}.brand{font-size:22px;font-weight:800;letter-spacing:-.3px}.tag2{font-size:12px;opacity:.9}#extb{margin-left:auto}#stats{display:flex;gap:8px;flex-wrap:wrap}.chip{background:#ffffff2e;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600}.card{border-top:3px solid #6366f1}.card:nth-child(2){border-top-color:#ec4899}th{background:#6366f118;color:#6366f1}button.b{background:#6366f1;color:#fff;border-color:#6366f1}button.d{color:#ef4444;border-color:#ef444455}#drop{background:linear-gradient(135deg,#6366f10d,#25d3660d)}#drop:hover{border-color:#6366f1}#auth{position:fixed;inset:0;background:linear-gradient(120deg,#6366f1,#8b5cf6 45%,#ec4899);display:none;align-items:center;justify-content:center;z-index:30;padding:16px}#auth.on{display:flex}#ab{background:var(--card);border-radius:14px;padding:24px;width:100%;max-width:380px}#ab h2{margin:0 0 2px;font-size:24px;background:linear-gradient(90deg,#6366f1,#ec4899);-webkit-background-clip:text;background-clip:text;color:transparent}.tabs{display:flex;gap:6px;margin:14px 0 4px}.tabs button{flex:1}#a_msg{color:#ef4444;font-size:13px;margin-top:8px;min-height:18px}#ua{display:none;align-items:center;gap:8px;font-size:12px}#ua button{background:#ffffff2e;color:#fff;border-color:#ffffff55}
+#cvm{position:fixed;inset:0;background:#000a;display:none;align-items:center;justify-content:center;padding:0;z-index:25}#cvm.on{display:flex}#cvb{background:var(--card);width:100vw;height:100vh;display:flex;flex-direction:column;padding:10px 14px}#cvb .bar{margin-bottom:8px}.doc{max-width:860px;margin:0 auto;padding:28px;color:#111;font:15px/1.6 system-ui,sans-serif}.doc table{border-collapse:collapse}.doc td,.doc th{border:1px solid #ddd;padding:4px 8px}.doc img{max-width:100%}#cvc{flex:1;overflow:auto;border:1px solid var(--bd);border-radius:8px;background:#fff}#cvc pre{margin:0;padding:16px;white-space:pre-wrap;font:13px/1.5 system-ui,sans-serif;color:#111}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#16a34a;color:#fff;padding:9px 18px;border-radius:8px;display:none;z-index:20}
+main{max-width:1200px;margin:0 auto;padding:20px;display:grid;gap:16px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:16px}
+.row{display:grid;grid-template-columns:2fr 1fr;gap:16px}@media(max-width:800px){.row{grid-template-columns:1fr}}
+#drop{border:2px dashed var(--bd);border-radius:10px;padding:28px;text-align:center;color:var(--mu);cursor:pointer}
+#drop.over{border-color:var(--ac);color:var(--ac)}
+textarea,input,select{width:100%;padding:8px;border:1px solid var(--bd);border-radius:6px;background:var(--bg);color:var(--tx);font:inherit}
+textarea{min-height:110px;resize:vertical}label{font-size:12px;color:var(--mu);display:block;margin:8px 0 4px}
+button{padding:7px 12px;border:1px solid var(--bd);border-radius:6px;background:var(--card);color:var(--tx);cursor:pointer;font:inherit}
+button.p{background:var(--ac);color:#fff;border-color:var(--ac)}button:hover{opacity:.85}
+.tw{overflow-x:auto}table{width:100%;border-collapse:collapse}th,td{padding:6px;border-bottom:1px solid var(--bd);text-align:left;white-space:nowrap}
+td input{padding:4px 6px;min-width:110px}.tag{font-size:11px;padding:2px 8px;border-radius:10px;background:var(--bd)}.tag.s{background:var(--ac);color:#fff}
+.bar{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}.bar input{max-width:260px}
+#md{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:16px;z-index:9}#md.on{display:flex}#box{background:var(--card);border-radius:12px;padding:20px;width:100%;max-width:560px;max-height:92vh;overflow:auto}#box h3{margin:0 0 4px}.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.btns{display:flex;gap:8px;margin-top:14px;justify-content:flex-end}.big{padding:10px 18px;font-size:15px}
+#st{color:var(--mu);font-size:13px;margin-top:8px}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style id="theme">
+:root{--bg:#f1f4f6;--card:#fff;--tx:#17232e;--mu:#667583;--bd:#dde4e9;--ac:#0b7a5e;--ac2:#096650;--nv:#13293d;--soft:#f6f8fa;--amber:#9a5b05;--amberbg:#fdf2dc;--ok:#0b7a5e;--okbg:#e2f3ed;--bad:#c0392b}
+@media(prefers-color-scheme:dark){:root{--bg:#0e151b;--card:#17212b;--tx:#e6ecf1;--mu:#8c9eac;--bd:#2a3743;--ac:#2fb58f;--ac2:#27a07e;--nv:#0a1016;--soft:#1c2833;--amber:#f0b45a;--amberbg:#3a2d17;--ok:#52d3aa;--okbg:#143429;--bad:#ef6a5b}}
+body{font-family:'Hanken Grotesk',system-ui,-apple-system,'Segoe UI',sans-serif;font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+header{background:var(--nv);padding:12px 28px;gap:14px;flex-wrap:wrap}
+.brand{font-size:19px;font-weight:700;letter-spacing:-.2px}.tag2{font-size:12px;opacity:.6}
+.chip{background:#ffffff14;border:1px solid #ffffff22;font-weight:500;font-size:12.5px;padding:4px 12px}
+#stats{gap:6px}#stats .chip{background:transparent;border-color:transparent;opacity:.85;padding:4px 8px}#stats .chip b{font-weight:700;font-size:14px;margin-right:3px}
+#ua{gap:10px}#ua button{padding:5px 12px}
+main{max-width:1240px;padding:26px 28px 48px;gap:20px}
+.card,.card:nth-child(2){border:1px solid var(--bd);border-top:1px solid var(--bd);border-radius:14px;padding:22px;box-shadow:0 1px 2px rgba(19,41,61,.05)}
+.ct{font-size:16px;font-weight:700;margin:0 0 14px;letter-spacing:-.1px}
+label{font-size:12.5px;font-weight:600;color:var(--tx);margin:14px 0 5px}
+input,textarea,select{border-radius:8px;border:1px solid var(--bd);background:var(--card);padding:9px 11px;font-family:inherit;transition:border-color .15s,box-shadow .15s}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--ac);box-shadow:0 0 0 3px color-mix(in srgb,var(--ac) 22%,transparent)}
+button{font-family:inherit;border-radius:8px;padding:8px 14px;font-weight:600;font-size:13px;background:var(--card);border:1px solid var(--bd);color:var(--tx);transition:background .15s,border-color .15s}
+button:hover{opacity:1;background:var(--soft)}button:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+button.p{background:var(--ac);border-color:var(--ac);color:#fff}button.p:hover{background:var(--ac2)}
+button.b{background:var(--okbg);border-color:transparent;color:var(--ok)}button.b:hover{background:color-mix(in srgb,var(--ok) 20%,var(--card))}
+button.d{background:transparent;border-color:transparent;color:var(--bad)}button.d:hover{background:var(--soft)}
+#drop{border:1.5px dashed #b4c1cc;border-radius:12px;padding:36px 20px;background:var(--soft);color:var(--mu);transition:all .15s}
+#drop b{display:block;color:var(--tx);font-size:15px;margin:8px 0 2px}#drop svg{color:var(--ac)}
+#drop:hover,#drop.over{border-color:var(--ac);background:var(--okbg);color:var(--ac)}
+.bar{gap:10px;margin-bottom:14px}.bar input{max-width:280px}#count{font-size:13px}
+.tw{border:1px solid var(--bd);border-radius:10px}
+table{border-collapse:separate;border-spacing:0}
+th{background:var(--soft);color:var(--mu);font-size:12px;font-weight:600;padding:10px 10px;border-bottom:1px solid var(--bd)}
+td{padding:7px 10px;border-bottom:1px solid var(--bd)}tbody tr:last-child td{border-bottom:0}tbody tr:hover td{background:var(--soft)}
+td input{border-color:transparent;background:transparent;padding:6px 8px;min-width:120px}td input:hover{border-color:var(--bd);background:var(--card)}
+.tag{background:var(--amberbg);color:var(--amber);font-weight:600;padding:3px 11px;border-radius:999px;font-size:12px}
+.tag.s{background:var(--okbg);color:var(--ok)}
+.tag::before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:currentColor;margin-right:6px;vertical-align:1px}
+#md,#cvm{backdrop-filter:blur(2px)}#md{background:rgba(12,22,32,.55)}
+#box{border-radius:16px;padding:26px;max-width:600px;box-shadow:0 24px 70px rgba(0,0,0,.3)}#box h3{font-size:19px;letter-spacing:-.2px}
+#md.on #box{animation:pop .18s ease-out}@keyframes pop{from{opacity:0;transform:translateY(8px) scale(.985)}}
+#auth{background:radial-gradient(1100px 600px at 15% 0%,#1f5668 0,#13293d 62%)}
+#ab{border-radius:16px;padding:32px;max-width:400px;box-shadow:0 24px 70px rgba(0,0,0,.35)}
+#ab h2{background:none;color:var(--tx);-webkit-text-fill-color:currentColor;font-size:26px;letter-spacing:-.4px}
+#toast{border-radius:10px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+.tag.f{background:color-mix(in srgb,var(--bad) 16%,var(--card));color:var(--bad)}
+.seg{display:flex;gap:4px;background:var(--soft);border:1px solid var(--bd);padding:3px;border-radius:10px;width:fit-content;margin-bottom:12px}
+.seg button{border:0;background:transparent;padding:6px 16px;color:var(--mu)}
+.seg button.on{background:var(--card);color:var(--tx);box-shadow:0 1px 2px rgba(0,0,0,.14)}
+button.em{background:#2563eb;border-color:#2563eb;color:#fff}button.em:hover{background:#1d4ed8}button.em:disabled{opacity:.6;cursor:wait}
+td.act{white-space:nowrap}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header><svg width="40" height="40" viewBox="0 0 40 40"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3ed6a8"/><stop offset="1" stop-color="#0b7a5e"/></linearGradient></defs><rect width="40" height="40" rx="11" fill="url(#lg)"/><path d="M11 9h13l6 6v11a3 3 0 0 1-3 3H11a3 3 0 0 1-3-3V12a3 3 0 0 1 3-3z" fill="#fff" opacity=".95"/><circle cx="17" cy="17" r="3" fill="#0b7a5e"/><path d="M11.5 25c.8-3 3-4 5.500-4s4.700 1 5.500 4z" fill="#0b7a5e"/><path d="M24 24h9a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-3l-3 3v-3h-3a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2z" fill="#25d366" stroke="#fff" stroke-width="1.500"/></svg><div><div class="brand">TalentPing</div><div class="tag2">Parse CVs · Ping candidates on WhatsApp &amp; email</div></div><span id="extb" class="chip" style="cursor:pointer" title="Click to re-check" onclick="pingExt()">WhatsApp extension not detected</span><div id="stats"></div><div id="ua"><span id="who"></span><button onclick="logout()">Sign out</button></div></header>
+<main>
+<div class="row">
+  <div class="card">
+    <div class="ct">Upload CVs</div>
+    <div id="drop"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0L7 9m5-5 5 5M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg><b>Drop CVs here, or click to browse</b>PDF, DOCX or TXT. Upload one or many at once.</div>
+    <input id="file" type="file" multiple accept=".pdf,.docx,.txt" hidden>
+    <div id="st"></div>
+  </div>
+  <div class="card">
+    <div class="ct">Message templates</div>
+    <div class="seg"><button id="tt_wa" class="on" onclick="setTT('wa')">WhatsApp</button><button id="tt_email" onclick="setTT('email')">Email</button></div>
+    <div id="tp_wa">
+      <label style="margin-top:0">Saved WhatsApp templates</label>
+      <div style="display:flex;gap:6px"><select id="tsel" onchange="pickT('wa')"></select><button onclick="newT('wa')" title="New template">+ New</button><button class="b" onclick="saveT('wa')">💾 Save</button><button class="d" onclick="delT('wa')">🗑</button></div>
+      <label>Campaign name</label><input id="tname" placeholder="e.g. Care Worker – London Oct">
+      <label>Your message — use {first_name} and {full_name}</label>
+      <textarea id="msg">Hello {first_name}, we received your CV and have an opportunity that matches your profile. Are you available to talk?</textarea>
+    </div>
+    <div id="tp_email" style="display:none">
+      <label style="margin-top:0">Saved email templates</label>
+      <div style="display:flex;gap:6px"><select id="etsel" onchange="pickT('email')"></select><button onclick="newT('email')" title="New template">+ New</button><button class="b" onclick="saveT('email')">💾 Save</button><button class="d" onclick="delT('email')">🗑</button></div>
+      <label>Campaign name</label><input id="etname" placeholder="e.g. Care Worker – London Oct (email)">
+      <label>Subject — use {first_name} and {full_name}</label>
+      <input id="esub" value="Job opportunity that matches your profile">
+      <label>Email message — use {first_name} and {full_name}</label>
+      <textarea id="emsg" style="min-height:150px">Hello {first_name},
+
+Thank you for sending us your CV. We have an opportunity that matches your profile. Are you available for a quick call this week?
+
+Kind regards,
+Proactive Outsourcing</textarea>
+      <div style="font-size:12px;color:var(--mu);margin-top:8px">Sent automatically from asher@proactiveoutsourcing.com. No mail app opens.</div>
+    </div>
+  </div>
+</div>
+<div class="card">
+  <div class="ct">Candidates</div>
+  <div class="bar">
+    <input id="q" placeholder="Search candidates…">
+    <button onclick="addBlank()">+ Add manually</button><select id="sf" onchange="render()" style="width:auto"><option value="">All status</option><option value="wa_new">WhatsApp: not sent</option><option value="wa_sent">WhatsApp: sent</option><option value="em_new">Email: not sent</option><option value="em_sent">Email: sent</option><option value="em_failed">Email: failed</option></select><button onclick="resetStatus()">🔄 Reset status</button>
+    <button onclick="exportCsv()">Export CSV</button>
+    <button onclick="clearAll()">Clear all</button>
+    <span id="count" style="color:var(--mu)"></span><span id="sv" style="font-size:12px;font-weight:600"></span>
+  </div>
+  <div class="tw"><table>
+    <thead><tr><th>First name</th><th>Full name</th><th>Phone</th><th>Email</th><th>CV</th><th>Campaign</th><th>WhatsApp</th><th>Email</th><th></th></tr></thead>
+    <tbody id="tb"></tbody>
+  </table></div>
+</div>
+</main>
+<div id="auth"><div id="ab"><h2>TalentPing</h2><div style="color:var(--mu);font-size:13px">Team sign in</div>
+<div class="tabs"><button id="a_t_in" class="b" onclick="setMode('in')">Sign in</button><button id="a_t_up" onclick="setMode('up')">Sign up</button></div>
+<div id="a_name_w" style="display:none"><label>Your name</label><input id="a_name"></div>
+<label>Email (your username)</label><input id="a_email" type="email" autocomplete="username">
+<label>Password (6+ characters)</label><input id="a_pw" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')authGo()">
+<div id="a_msg"></div><button id="a_go" class="p big" style="width:100%;margin-top:8px" onclick="authGo()">Sign in</button></div></div>
+<div id="cvm"><div id="cvb"><div class="bar"><b id="cvt" style="flex:1"></b><button id="cvo"></button><button onclick="closeCv()">✕ Close</button></div><div id="cvc"></div></div></div>
+<input id="attf" type="file" accept=".pdf,.docx,.txt" hidden onchange="attach(this)">
+<div id="toast"></div><div id="md"><div id="box">
+<h3>Candidate record</h3><div id="rf" style="color:var(--mu);font-size:12px"></div>
+<div class="g2"><div><label>First name</label><input id="r_first"></div><div><label>Full name</label><input id="r_name"></div>
+<div><label>Phone</label><input id="r_phone"></div><div><label>Email</label><input id="r_email"></div></div>
+<div class="seg" style="margin-top:14px"><button id="rt_wa" class="on" onclick="setRT('wa')">WhatsApp</button><button id="rt_email" onclick="setRT('email')">Email</button></div>
+<div id="rp_wa">
+<label style="margin-top:0">Template / campaign</label><select id="r_tsel" onchange="pickRT('wa')"></select>
+<label>WhatsApp message (edit for this candidate only)</label><textarea id="r_msg"></textarea>
+<div id="r_st" style="margin-top:8px;color:var(--mu);font-size:13px"></div>
+</div>
+<div id="rp_email" style="display:none">
+<label style="margin-top:0">Email template / campaign</label><select id="r_etsel" onchange="pickRT('email')"></select>
+<label>Subject</label><input id="r_esub">
+<label>Email message (edit for this candidate only)</label><textarea id="r_emsg" style="min-height:140px"></textarea>
+<div id="r_est" style="margin-top:8px;color:var(--mu);font-size:13px"></div>
+</div>
+<label>Notes</label><textarea id="r_notes" style="min-height:60px"></textarea>
+<div id="r_sv" style="font-size:13px;font-weight:600;min-height:18px;margin-top:6px"></div><div class="btns"><button id="r_cv" onclick="viewCv(cur)">📄 View CV</button><button onclick="$('attf').click()" style="margin-right:auto">📎 Attach CV</button><button onclick="closeRec()">Close</button><button class="b big" onclick="saveRec()">💾 Save</button><button id="r_sendwa" class="p big" onclick="sendRec()">Send WhatsApp</button><button id="r_sendem" class="em big" style="display:none" onclick="sendRecEmail()">Send Email</button></div>
+</div></div>
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+const KEY='cvdesk:v1';
+let C=[];
+try{C=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){}
+const $=id=>document.getElementById(id);
+// ====== PASTE YOUR SUPABASE DETAILS HERE (see README-DEPLOY.md) ======
+const SB_URL='https://alvdbsfxehjuprklrbrz.supabase.co',SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFsdmRic2Z4ZWhqdXBya2xyYnJ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEzOTM3NDIsImV4cCI6MjEwNjk2OTc0Mn0.0bVsd0AzhavC51_gv3dtTzgdaYWCSPMf0OKAb3isGtw';
+// =====================================================================
+const CLOUD=!!(SB_URL&&SB_KEY);
+const sb=CLOUD?supabase.createClient(SB_URL,SB_KEY):null;
+let user=null,snap={},ch=null,mode='in',pth={},LF={},T=[],curT={wa:'',email:''};
+try{if(!CLOUD)T=JSON.parse(localStorage.getItem('tp:tpl')||'[]');curT.wa=localStorage.getItem('tp:cur')||'';curT.email=localStorage.getItem('tp:cure')||''}catch(e){}
+const row=c=>({id:c.id,first:c.first||'',name:c.name||'',phone:c.phone||'',email:c.email||'',file:c.file||'',status:c.status||'new',notes:c.notes||'',msg:c.msg||'',sent_at:c.sentAt||'',campaign:c.campaign||'',cv_path:c.cvPath||'',email_status:c.emailStatus||'new',email_sent_at:c.emailSentAt||'',email_campaign:c.emailCampaign||'',email_subject:c.emailSubject||'',email_msg:c.emailMsg||'',email_error:c.emailError||''});
+const fromRow=r=>({id:r.id,first:r.first,name:r.name,phone:r.phone,email:r.email,file:r.file,status:r.status,notes:r.notes,msg:r.msg,sentAt:r.sent_at,campaign:r.campaign||'',cvPath:r.cv_path||'',emailStatus:r.email_status||'new',emailSentAt:r.email_sent_at||'',emailCampaign:r.email_campaign||'',emailSubject:r.email_subject||'',emailMsg:r.email_msg||'',emailError:r.email_error||''});
+async function pushCloud(){
+  let ok=true;const now={},up=[];
+  for(const c of C){pth[c.id]=c.cvPath||'';const j=JSON.stringify(row(c));now[c.id]=j;if(snap[c.id]!==j)up.push({...row(c),updated_by:user.email})}
+  const del=Object.keys(snap).filter(id=>!(id in now));snap=now;
+  if(up.length){const{error}=await sb.from('candidates').upsert(up);if(error){toast('Save failed: '+error.message,1);ok=false}}
+  if(del.length){const{error}=await sb.from('candidates').delete().in('id',del);if(error){toast('Delete failed: '+error.message,1);ok=false}const gone=del.map(id=>pth[id]).filter(Boolean);if(gone.length)sb.storage.from('cvs').remove(gone)}
+  return ok;
+}
+const save=async()=>{
+  if(CLOUD)return user?await pushCloud():false;
+  try{localStorage.setItem(KEY,JSON.stringify(C));return true}catch(e){$('st').textContent='Storage full or unavailable.';return false}
+};
+async function load(){
+  let all=[],from=0;
+  for(;;){
+    const{data,error}=await sb.from('candidates').select('*').order('created_at',{ascending:false}).range(from,from+999);
+    if(error){toast('Load failed: '+error.message,1);return}
+    all=all.concat(data);if(data.length<1000)break;from+=1000;
+  }
+  C=all.map(fromRow);snap={};pth={};C.forEach(c=>pth[c.id]=c.cvPath||'');C.forEach(c=>snap[c.id]=JSON.stringify(row(c)));render();
+}
+function setMode(m){mode=m;$('a_name_w').style.display=m==='up'?'block':'none';$('a_go').textContent=m==='up'?'Create account':'Sign in';$('a_t_in').className=m==='in'?'b':'';$('a_t_up').className=m==='up'?'b':'';$('a_msg').textContent=''}
+async function authGo(){
+  const email=$('a_email').value.trim(),password=$('a_pw').value;
+  if(!email||password.length<6){$('a_msg').textContent='Enter your email and a password of 6+ characters.';return}
+  $('a_msg').textContent='Please wait…';
+  const r=mode==='up'?await sb.auth.signUp({email,password,options:{data:{full_name:$('a_name').value.trim()}}}):await sb.auth.signInWithPassword({email,password});
+  if(r.error){$('a_msg').textContent=r.error.message;return}
+  $('a_msg').textContent=(mode==='up'&&!r.data.session)?'Account created. Confirm via the email we sent, then sign in.':'';
+}
+async function logout(){await sb.auth.signOut()}
+function enter(u){
+  user=u;$('auth').classList.remove('on');$('ua').style.display='flex';
+  $('who').textContent=(u.user_metadata&&u.user_metadata.full_name)||u.email;
+  load();loadT(true);
+  if(!ch)ch=sb.channel('cand').on('postgres_changes',{event:'*',schema:'public',table:'candidates'},()=>{if(!cur&&!pend&&!(document.activeElement&&document.activeElement.closest('td')))load()}).subscribe();
+}
+async function boot(){
+  if(!CLOUD){fillSelects(true);render();return}
+  $('auth').classList.add('on');
+  const{data}=await sb.auth.getSession();
+  if(data.session)enter(data.session.user);
+  sb.auth.onAuthStateChange((ev,ses)=>{
+    if(ses&&!user)enter(ses.user);
+    if(!ses&&user){user=null;C=[];snap={};if(ch){sb.removeChannel(ch);ch=null}$('ua').style.display='none';$('auth').classList.add('on');render()}
+  });
+}
+window.addEventListener('focus',()=>{if(CLOUD&&user&&!cur&&!pend){load();loadT()}});
+const uid=()=>Math.random().toString(36).slice(2,10);
+
+async function readText(f){
+  const n=f.name.toLowerCase();
+  if(n.endsWith('.pdf')){
+    const pdf=await pdfjsLib.getDocument({data:await f.arrayBuffer()}).promise;let t='';
+    for(let i=1;i<=pdf.numPages;i++){
+      const items=(await(await pdf.getPage(i)).getTextContent()).items;let y=null;
+      for(const it of items){const ny=it.transform[5];if(y!==null&&Math.abs(ny-y)>2)t+='\n';else if(y!==null)t+=' ';t+=it.str;y=ny}
+      t+='\n';
+    }return t;
+  }
+  if(n.endsWith('.docx'))return (await mammoth.extractRawText({arrayBuffer:await f.arrayBuffer()})).value;
+  return await f.text();
+}
+
+const BAD=/resume|curriculum|vitae|cv\b|profile|objective|summary|contact|address|email|phone|mobile|experience|education|skills|page/i;
+function parse(text,file){
+  const email=(text.match(/[\w.+-]+@[\w-]+(\.[\w-]+)+/)||[''])[0];
+  let phone='';
+  const pm=text.match(/(\+|00)?\d[\d\s().-]{8,16}\d/g)||[];
+  for(const p of pm){const d=p.replace(/\D/g,'');if(d.length>=10&&d.length<=15&&!/^(19|20)\d{2}/.test(d)){phone=p.trim();break}}
+  let name='';
+  const lines=text.split(/\n/).map(l=>l.trim()).filter(Boolean).slice(0,15);
+  for(const l of lines){
+    if(BAD.test(l)||/[\d@:/]/.test(l))continue;
+    const w=l.split(/\s+/);
+    if(w.length>=2&&w.length<=4&&w.every(x=>/^[A-Za-z.'-]+$/.test(x))){name=w.map(x=>x[0].toUpperCase()+x.slice(1).toLowerCase()).join(' ');break}
+  }
+  if(!name&&email)name=email.split('@')[0].replace(/[._\d-]+/g,' ').trim().replace(/\b\w/g,c=>c.toUpperCase());
+  if(!name)name=file.replace(/\.[^.]+$/,'').replace(/[_-]+/g,' ').replace(/cv|resume/ig,'').trim();
+  return{id:uid(),first:name.split(' ')[0]||'',name,phone,email,file,status:'new'};
+}
+
+async function handle(files){
+  let ok=0;
+  for(const f of files){
+    $('st').textContent=`Parsing ${f.name}…`;
+    try{
+      const c=parse(await readText(f),f.name);
+      if(CLOUD&&user){const p=c.id+'_'+f.name.replace(/[^\w.\-]/g,'_');const{error}=await sb.storage.from('cvs').upload(p,f,{upsert:true});if(!error)c.cvPath=p;else toast('CV file not stored: '+error.message,1)}
+      else LF[c.id]=f;
+      C.unshift(c);ok++;
+    }catch(e){console.error(e)}
+  }
+  save();render();$('st').textContent=`Parsed ${ok} of ${files.length} file(s). Click a candidate to open the record.`;
+  if(ok===1)openRec(C[0].id);
+}
+
+const fmt=(b,c)=>b.replaceAll('{first_name}',c.first||'').replaceAll('{full_name}',c.name||'');
+const tpl=c=>fmt($('msg').value,c);
+const curCampaign=()=>{const t=T.find(x=>x.id===curT.wa);return t?t.campaign:'Custom'};
+const campOf=id=>{const t=T.find(x=>x.id===id);return t?t.campaign:'Custom'};
+let ext=false;
+window.addEventListener('message',e=>{if(e.data&&e.data.type==='CVDESK_READY'){ext=true;const b=$('extb');b.textContent='WhatsApp extension connected';b.style.background='#0b7a5e'}});
+function pingExt(){window.postMessage({type:'CVDESK_PING'},'*')}
+pingExt();[300,1000,2500,5000].forEach(t=>setTimeout(pingExt,t));
+function openWA(url){ext?window.postMessage({type:'CVDESK_SEND',url},'*'):window.open(url,'whatsapp_web')}
+function waLink(c,text){
+  let d=(c.phone||'').replace(/\(0\)/g,'').replace(/[^\d+]/g,'');
+  if(d.startsWith('+'))d=d.slice(1);else if(d.startsWith('00'))d=d.slice(2);
+  else if(d.startsWith('0'))d='44'+d.slice(1);
+  else if(/^7\d{9}$/.test(d))d='44'+d;
+  if(d.startsWith('440'))d='44'+d.slice(3);
+  const m=text??tpl(c);
+  return`https://web.whatsapp.com/send?phone=${d}&text=${encodeURIComponent(m)}`;
+}
+function send(id){
+  const c=C.find(x=>x.id===id);if(!c||!c.phone)return alert('No phone number.');
+  openWA(waLink(c));c.status='sent';c.campaign=curCampaign();c.sentAt=new Date().toLocaleString();c.msg=tpl(c);save();render();
+}
+const matchSf=(c,f)=>!f||(f==='wa_new'?c.status!=='sent':f==='wa_sent'?c.status==='sent':f==='em_new'?c.emailStatus!=='sent':f==='em_sent'?c.emailStatus==='sent':f==='em_failed'?c.emailStatus==='failed':true);
+function visible(){const q=$('q').value.toLowerCase(),sf=$('sf').value;return C.filter(c=>(!q||((c.name||'')+(c.email||'')+(c.phone||'')+(c.campaign||'')+(c.emailCampaign||'')).toLowerCase().includes(q))&&matchSf(c,sf))}
+function resetStatus(){
+  const l=visible().filter(c=>c.status==='sent'||c.emailStatus==='sent'||c.emailStatus==='failed');
+  if(!l.length)return toast('Nothing to reset',1);
+  if(!confirm(`Reset WhatsApp and Email status of ${l.length} candidate(s) back to "pending"? Only the ones currently shown in the list.`))return;
+  l.forEach(c=>{c.status='new';c.sentAt='';c.campaign='';c.msg='';c.emailStatus='new';c.emailSentAt='';c.emailCampaign='';c.emailSubject='';c.emailMsg='';c.emailError=''});save();render();toast('✓ Status reset');
+}
+const hasCv=c=>!!(c.cvPath||LF[c.id]);
+let cvUrl='';
+function closeCv(){$('cvm').classList.remove('on');$('cvc').innerHTML='';if(cvUrl){URL.revokeObjectURL(cvUrl);cvUrl=''}}
+async function viewCv(id){
+  const c=C.find(x=>x.id===id);if(!c)return;
+  if(cvUrl){URL.revokeObjectURL(cvUrl);cvUrl=''}
+  $('cvt').textContent=(c.name||'Candidate')+' — '+(c.file||'');$('cvo').style.display='none';
+  $('cvc').innerHTML='<p style="padding:16px;color:#666">Loading CV…</p>';$('cvm').classList.add('on');
+  try{
+    let blob=LF[id]||null;
+    if(!blob&&c.cvPath&&CLOUD){const{data,error}=await sb.storage.from('cvs').download(c.cvPath);if(error)throw error;blob=data}
+    if(!blob)throw new Error('No CV file stored for this candidate. Use 📎 Attach CV in the record.');
+    const name=c.file||c.cvPath||'cv.pdf';
+    if(/\.pdf$/i.test(name)){
+      cvUrl=URL.createObjectURL(new Blob([blob],{type:'application/pdf'}));
+      $('cvc').innerHTML=`<iframe src="${cvUrl}" style="width:100%;height:100%;border:0"></iframe>`;
+      $('cvo').textContent='Open in new tab';$('cvo').onclick=()=>window.open(cvUrl,'_blank');
+    }else{
+      if(/\.docx$/i.test(name)){const r=await mammoth.convertToHtml({arrayBuffer:await blob.arrayBuffer()});$('cvc').innerHTML='<div class="doc">'+r.value+'</div>'}
+      else if(/\.txt$/i.test(name))$('cvc').innerHTML='<pre>'+esc(await blob.text())+'</pre>';
+      else $('cvc').innerHTML='<p style="padding:20px;color:#444">Preview is not available for this file type. Use “Download original”.</p>';
+      cvUrl=URL.createObjectURL(blob);
+      $('cvo').textContent='Download original';$('cvo').onclick=()=>{const a=document.createElement('a');a.href=cvUrl;a.download=name;a.click()};
+    }
+    $('cvo').style.display='';
+  }catch(e){closeCv();toast(e.message||'Could not open CV',1)}
+}
+async function attach(inp){
+  const f=inp.files[0];inp.value='';const c=C.find(x=>x.id===cur);if(!f||!c)return;
+  if(CLOUD&&user){const p=c.id+'_'+f.name.replace(/[^\w.\-]/g,'_');const{error}=await sb.storage.from('cvs').upload(p,f,{upsert:true});if(error)return toast('Upload failed: '+error.message,1);c.cvPath=p}
+  else LF[c.id]=f;
+  c.file=f.name;save();render();$('r_cv').style.display='';$('rf').textContent='CV: '+f.name;toast('✓ CV attached');
+}
+$('cvm').onclick=e=>{if(e.target.id==='cvm')closeCv()};
+const TF={wa:{sel:'tsel',rsel:'r_tsel',name:'tname',body:'msg',key:'tp:cur'},email:{sel:'etsel',rsel:'r_etsel',name:'etname',body:'emsg',key:'tp:cure'}};
+const tList=k=>T.filter(t=>(t.kind||'wa')===k);
+function setTT(k){['wa','email'].forEach(x=>{$('tp_'+x).style.display=x===k?'':'none';$('tt_'+x).classList.toggle('on',x===k)})}
+function applyT(k){const t=T.find(x=>x.id===curT[k]);if(t){const f=TF[k];$(f.name).value=t.campaign;$(f.body).value=t.body;if(k==='email')$('esub').value=t.subject||''}}
+function fillSelects(apply){
+  for(const k of ['wa','email']){
+    const f=TF[k],o='<option value="">✏️ Custom message (not saved)</option>'+tList(k).map(t=>`<option value="${t.id}">${esc(t.campaign)}</option>`).join('');
+    $(f.sel).innerHTML=o;$(f.rsel).innerHTML=o;
+    if(!tList(k).find(x=>x.id===curT[k]))curT[k]='';
+    $(f.sel).value=curT[k];$(f.rsel).value=curT[k];
+    if(apply)applyT(k);
+  }
+}
+function pickT(k){const f=TF[k];curT[k]=$(f.sel).value;try{localStorage.setItem(f.key,curT[k])}catch(e){}if(curT[k])applyT(k);else $(f.name).value=''}
+function pickRT(k){
+  k=k||'wa';const c=C.find(x=>x.id===cur),t=T.find(x=>x.id===$(TF[k].rsel).value);if(!c||!t)return;
+  const d={first:$('r_first').value,name:$('r_name').value};
+  if(k==='wa')$('r_msg').value=fmt(t.body,d);else{$('r_emsg').value=fmt(t.body,d);$('r_esub').value=fmt(t.subject||'',d)}
+}
+function setRT(k){['wa','email'].forEach(x=>{$('rp_'+x).style.display=x===k?'':'none';$('rt_'+x).classList.toggle('on',x===k)});$('r_sendwa').style.display=k==='wa'?'':'none';$('r_sendem').style.display=k==='email'?'':'none'}
+function newT(k){const f=TF[k];curT[k]='';$(f.sel).value='';$(f.name).value='';$(f.name).focus();toast('Write campaign name + message, then press Save')}
+async function persistT(t){
+  if(CLOUD){const{error}=await sb.from('templates').upsert({id:t.id,campaign:t.campaign,body:t.body,kind:t.kind||'wa',subject:t.subject||'',updated_by:user.email});if(error)toast('Template save failed: '+error.message,1)}
+  else try{localStorage.setItem('tp:tpl',JSON.stringify(T))}catch(e){}
+}
+async function saveT(k){
+  const f=TF[k],name=$(f.name).value.trim(),body=$(f.body).value,subject=k==='email'?$('esub').value:'';
+  if(!name)return toast('Enter a campaign name first',1);
+  let t=T.find(x=>x.id===curT[k]);
+  if(t){t.campaign=name;t.body=body;t.subject=subject}else{t={id:uid(),campaign:name,body,kind:k,subject};T.push(t);curT[k]=t.id}
+  try{localStorage.setItem(f.key,curT[k])}catch(e){}
+  await persistT(t);fillSelects();toast('✓ Template saved');
+}
+async function delT(k){
+  const t=T.find(x=>x.id===curT[k]);if(!t)return toast('Select a saved template first',1);
+  if(!confirm(`Delete template "${t.campaign}"?`))return;
+  T=T.filter(x=>x!==t);curT[k]='';
+  if(CLOUD){await sb.from('templates').delete().eq('id',t.id)}else try{localStorage.setItem('tp:tpl',JSON.stringify(T))}catch(e){}
+  fillSelects();toast('Template deleted');
+}
+async function loadT(apply){
+  const{data,error}=await sb.from('templates').select('*').order('created_at');
+  if(error){toast('Templates: '+error.message,1);return}
+  T=data.map(r=>({id:r.id,campaign:r.campaign,body:r.body,kind:r.kind||'wa',subject:r.subject||''}));fillSelects(apply);
+}
+let cur=null;
+function openRec(id){
+  const c=C.find(x=>x.id===id);if(!c)return;cur=id;
+  ['first','name','phone','email'].forEach(k=>$('r_'+k).value=c[k]||'');
+  $('r_tsel').value=T.find(x=>x.id===curT.wa)?curT.wa:'';$('r_etsel').value=T.find(x=>x.id===curT.email)?curT.email:'';$('r_esub').value=(c.emailStatus==='sent'&&c.emailSubject)?c.emailSubject:fmt($('esub').value,c);$('r_emsg').value=(c.emailStatus==='sent'&&c.emailMsg)?c.emailMsg:fmt($('emsg').value,c);$('r_msg').value=(c.status==='sent'&&c.msg)?c.msg:tpl(c);$('r_cv').style.display=hasCv(c)?'':'none';$('r_notes').value=c.notes||'';
+  $('rf').textContent='CV: '+c.file;
+  $('r_st').textContent=c.status==='sent'?'✓ WhatsApp sent'+(c.sentAt?' on '+c.sentAt:''):'WhatsApp: not sent yet';
+  $('r_est').textContent=c.emailStatus==='sent'?'✓ Email sent'+(c.emailSentAt?' on '+c.emailSentAt:''):c.emailStatus==='failed'?'✕ Last email attempt failed: '+(c.emailError||'unknown error'):'Email: not sent yet';
+  setRT('wa');
+  $('md').classList.add('on');
+}
+function collectRec(){const c=C.find(x=>x.id===cur);if(!c)return null;['first','name','phone','email'].forEach(k=>c[k]=$('r_'+k).value.trim());c.notes=$('r_notes').value;c.msg=$('r_msg').value;return c}
+['first','name','phone','email','notes','msg'].forEach(k=>$('r_'+k).addEventListener('input',()=>{if(collectRec())later()}));
+function closeRec(){if(collectRec())flushSave();$('md').classList.remove('on');cur=null;render()}
+function toast(t,bad){const e=$('toast');e.style.background=bad?'#c0392b':'#0b7a5e';e.textContent=t;e.style.display='block';setTimeout(()=>e.style.display='none',1800)}
+function saveRec(){
+  const c=C.find(x=>x.id===cur);if(!c)return;
+  ['first','name','phone','email'].forEach(k=>c[k]=$('r_'+k).value.trim());
+  c.notes=$('r_notes').value;c.msg=$('r_msg').value;save();render();toast('✓ Candidate saved');
+}
+function sendRec(){
+  const c=C.find(x=>x.id===cur);if(!c)return;
+  ['first','name','phone','email'].forEach(k=>c[k]=$('r_'+k).value.trim());
+  c.notes=$('r_notes').value;c.msg=$('r_msg').value;
+  if(!c.phone)return alert('Add a phone number first.');
+  openWA(waLink(c,c.msg));
+  c.status='sent';c.campaign=campOf($('r_tsel').value);c.sentAt=new Date().toLocaleString();save();
+  $('r_st').textContent='✓ Opened in WhatsApp Web — press Send there. Marked as sent.';
+}
+const validEmail=x=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((x||'').trim());
+const EM=new Set();
+async function sendMail(to,subject,body){
+  if(!CLOUD||!user)throw new Error('Sign in first');
+  const{data,error}=await sb.functions.invoke('send-email',{body:{to:to.trim(),subject,body}});
+  if(error){let m=error.message;try{const j=await error.context.json();if(j&&j.error)m=j.error}catch(e){}throw new Error(m)}
+  if(data&&data.error)throw new Error(data.error);
+}
+async function doEmail(c,subj,body,camp){
+  EM.add(c.id);render();let ok=true;
+  try{
+    await sendMail(c.email,subj,body);
+    Object.assign(c,{emailStatus:'sent',emailSentAt:new Date().toLocaleString(),emailCampaign:camp,emailSubject:subj,emailMsg:body,emailError:''});
+    toast('✓ Email sent to '+c.email);
+  }catch(e){
+    ok=false;Object.assign(c,{emailStatus:'failed',emailError:e.message||'Unknown error'});
+    toast('Email failed: '+c.emailError,1);
+  }
+  EM.delete(c.id);save();render();return ok;
+}
+const askEmail=c=>confirm(c.emailStatus==='sent'?`An email was already sent to ${c.email} on ${c.emailSentAt}. Send another?`:`Send this email to ${c.email} from asher@proactiveoutsourcing.com?`);
+async function sendEmail(id){
+  const c=C.find(x=>x.id===id);if(!c||EM.has(id))return;
+  if(!validEmail(c.email))return alert('No valid email address for this candidate.');
+  const subj=fmt($('esub').value,c).trim(),body=fmt($('emsg').value,c);
+  if(!subj||!body.trim())return alert('Write the email subject and message in the Email template first.');
+  if(!askEmail(c))return;
+  await doEmail(c,subj,body,campOf(curT.email));
+}
+async function sendRecEmail(){
+  const c=C.find(x=>x.id===cur);if(!c||EM.has(c.id))return;
+  collectRec();
+  const subj=$('r_esub').value.trim(),body=$('r_emsg').value;
+  if(!validEmail(c.email))return alert('Add a valid email address first.');
+  if(!subj||!body.trim())return alert('Subject and message cannot be empty.');
+  if(!askEmail(c))return;
+  $('r_est').textContent='Sending…';
+  const ok=await doEmail(c,subj,body,campOf($('r_etsel').value));
+  $('r_est').textContent=ok?'✓ Email sent to '+c.email+' on '+c.emailSentAt:'✕ Failed: '+c.emailError;
+}
+$('md').onclick=e=>{if(e.target.id==='md')closeRec()};
+let tmr=null,pend=false;
+function setSaved(ok){const a=[$('sv'),$('r_sv')];a.forEach(x=>{if(x){x.textContent=ok?'✓ Saved':'⚠ Not saved';x.style.color=ok?'#16a34a':'#dc2626'}});setTimeout(()=>a.forEach(x=>{if(x)x.textContent=''}),2500)}
+async function flushSave(){clearTimeout(tmr);pend=false;setSaved(await save())}
+function later(){pend=true;clearTimeout(tmr);tmr=setTimeout(flushSave,700)}
+function edit(id,k,v){const c=C.find(x=>x.id===id);if(!c)return;c[k]=v;if(k==='name'&&!c._f)c.first=v.split(' ')[0];if(k==='first')c._f=1;later()}
+window.addEventListener('beforeunload',e=>{if(pend){flushSave();e.preventDefault();e.returnValue=''}});
+function del(id){C=C.filter(x=>x.id!==id);save();render()}
+function addBlank(){C.unshift({id:uid(),first:'',name:'',phone:'',email:'',file:'manual',status:'new'});save();render()}
+function clearAll(){if(confirm(CLOUD?'Delete ALL candidates for the whole team? This cannot be undone.':'Delete all candidates?')){C=[];save();render()}}
+function exportCsv(){
+  const r=[['First name','Full name','Phone','Email','File','WhatsApp status','Email status'],...C.map(c=>[c.first,c.name,c.phone,c.email,c.file,c.status==='sent'?'sent':'pending',c.emailStatus==='sent'?'sent':c.emailStatus==='failed'?'failed':'pending'])];
+  const csv=r.map(x=>x.map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='candidates.csv';a.click();
+}
+const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+function emTag(c){
+  if(EM.has(c.id))return '<span class="tag">sending…</span>';
+  if(c.emailStatus==='sent')return `<span class="tag s" title="${esc('Sent '+(c.emailSentAt||'')+(c.emailCampaign?' · '+c.emailCampaign:''))}">sent</span>`;
+  if(c.emailStatus==='failed')return `<span class="tag f" title="${esc(c.emailError||'Failed')}">failed</span>`;
+  return '<span class="tag">pending</span>';
+}
+function render(keep){
+  const q=$('q').value.toLowerCase();
+  const list=visible();
+  const kb=Math.round(JSON.stringify(C).length/1024);
+  $('count').textContent=`${list.length} shown · ${CLOUD?'shared team database':'storage '+kb+' KB of ~5,000 KB'}`;
+  $('stats').innerHTML=`<span class="chip"><b>${C.length}</b> candidates</span><span class="chip"><b>${C.filter(x=>x.status==='sent').length}</b> WhatsApp sent</span><span class="chip"><b>${C.filter(x=>x.emailStatus==='sent').length}</b> emailed</span>`;
+  if(keep&&document.activeElement&&document.activeElement.tagName==='INPUT'&&document.activeElement.closest('td'))return;
+  $('tb').innerHTML=list.map(c=>`<tr>
+    <td><input value="${esc(c.first)}" oninput="edit('${c.id}','first',this.value)" onchange="flushSave()"></td>
+    <td><input value="${esc(c.name)}" oninput="edit('${c.id}','name',this.value)" onchange="flushSave()"></td>
+    <td><input value="${esc(c.phone)}" oninput="edit('${c.id}','phone',this.value)" onchange="flushSave()"></td>
+    <td><input value="${esc(c.email)}" oninput="edit('${c.id}','email',this.value)" onchange="flushSave()"></td>
+    <td>${hasCv(c)?`<button class="b" onclick="viewCv('${c.id}')">📄 View CV</button>`:'<span style="color:var(--mu)">—</span>'}</td>
+    <td>${esc(c.campaign)}</td><td><span class="tag ${c.status==='sent'?'s':''}" title="${esc(c.sentAt)}">${c.status==='sent'?'sent':'pending'}</span></td>
+    <td>${emTag(c)}</td>
+    <td class="act"><button class="b" onclick="openRec('${c.id}')">Open record</button> <button class="p" onclick="send('${c.id}')">Send WhatsApp</button> <button class="em" ${EM.has(c.id)?'disabled':''} onclick="sendEmail('${c.id}')">Send Email</button> <button class="d" onclick="del('${c.id}')">✕</button></td></tr>`).join('')
+    ||'<tr><td colspan="9" style="color:var(--mu);padding:20px">No candidates yet. Upload some CVs above.</td></tr>';
+}
+const drop=$('drop'),fi=$('file');
+drop.onclick=()=>fi.click();fi.onchange=()=>{handle([...fi.files]);fi.value=''};
+drop.ondragover=e=>{e.preventDefault();drop.classList.add('over')};
+drop.ondragleave=()=>drop.classList.remove('over');
+drop.ondrop=e=>{e.preventDefault();drop.classList.remove('over');handle([...e.dataTransfer.files])};
+$('q').oninput=()=>render();
+boot();
+</script>
+</body>
+</html>
