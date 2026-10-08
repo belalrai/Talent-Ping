@@ -12,7 +12,7 @@
 @media(prefers-color-scheme:dark){:root{--bg:#14171a;--card:#1d2125;--tx:#e8eaed;--mu:#9aa0a6;--bd:#2d3338;--ac:#25d366}}
 *{box-sizing:border-box}body{margin:0;font:14px system-ui,sans-serif;background:var(--bg);color:var(--tx)}
 header{padding:14px 24px;background:linear-gradient(120deg,#6366f1,#8b5cf6 45%,#ec4899);color:#fff;display:flex;align-items:center;gap:12px}.brand{font-size:22px;font-weight:800;letter-spacing:-.3px}.tag2{font-size:12px;opacity:.9}#extb{margin-left:auto}#stats{display:flex;gap:8px;flex-wrap:wrap}.chip{background:#ffffff2e;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600}.card{border-top:3px solid #6366f1}.card:nth-child(2){border-top-color:#ec4899}th{background:#6366f118;color:#6366f1}button.b{background:#6366f1;color:#fff;border-color:#6366f1}button.d{color:#ef4444;border-color:#ef444455}#drop{background:linear-gradient(135deg,#6366f10d,#25d3660d)}#drop:hover{border-color:#6366f1}#auth{position:fixed;inset:0;background:linear-gradient(120deg,#6366f1,#8b5cf6 45%,#ec4899);display:none;align-items:center;justify-content:center;z-index:30;padding:16px}#auth.on{display:flex}#ab{background:var(--card);border-radius:14px;padding:24px;width:100%;max-width:380px}#ab h2{margin:0 0 2px;font-size:24px;background:linear-gradient(90deg,#6366f1,#ec4899);-webkit-background-clip:text;background-clip:text;color:transparent}.tabs{display:flex;gap:6px;margin:14px 0 4px}.tabs button{flex:1}#a_msg{color:#ef4444;font-size:13px;margin-top:8px;min-height:18px}#ua{display:none;align-items:center;gap:8px;font-size:12px}#ua button{background:#ffffff2e;color:#fff;border-color:#ffffff55}
-#cvm{position:fixed;inset:0;background:#000a;display:none;align-items:center;justify-content:center;padding:12px;z-index:25}#cvm.on{display:flex}#cvb{background:var(--card);border-radius:12px;width:100%;max-width:960px;height:92vh;display:flex;flex-direction:column;padding:12px}#cvc{flex:1;overflow:auto;border:1px solid var(--bd);border-radius:8px;background:#fff}#cvc pre{margin:0;padding:16px;white-space:pre-wrap;font:13px/1.5 system-ui,sans-serif;color:#111}
+#cvm{position:fixed;inset:0;background:#000a;display:none;align-items:center;justify-content:center;padding:0;z-index:25}#cvm.on{display:flex}#cvb{background:var(--card);width:100vw;height:100vh;display:flex;flex-direction:column;padding:10px 14px}#cvb .bar{margin-bottom:8px}.doc{max-width:860px;margin:0 auto;padding:28px;color:#111;font:15px/1.6 system-ui,sans-serif}.doc table{border-collapse:collapse}.doc td,.doc th{border:1px solid #ddd;padding:4px 8px}.doc img{max-width:100%}#cvc{flex:1;overflow:auto;border:1px solid var(--bd);border-radius:8px;background:#fff}#cvc pre{margin:0;padding:16px;white-space:pre-wrap;font:13px/1.5 system-ui,sans-serif;color:#111}
 #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#16a34a;color:#fff;padding:9px 18px;border-radius:8px;display:none;z-index:20}
 main{max-width:1200px;margin:0 auto;padding:20px;display:grid;gap:16px}
 .card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:16px}
@@ -56,7 +56,7 @@ td input{padding:4px 6px;min-width:110px}.tag{font-size:11px;padding:2px 8px;bor
     <span id="count" style="color:var(--mu)"></span><span id="sv" style="font-size:12px;font-weight:600"></span>
   </div>
   <div class="tw"><table>
-    <thead><tr><th>First name</th><th>Full name</th><th>Phone</th><th>Email</th><th>CV file</th><th>Campaign</th><th>Status</th><th></th></tr></thead>
+    <thead><tr><th>First name</th><th>Full name</th><th>Phone</th><th>Email</th><th>CV</th><th>Campaign</th><th>Status</th><th></th></tr></thead>
     <tbody id="tb"></tbody>
   </table></div>
 </div>
@@ -238,8 +238,9 @@ async function viewCv(id){
       $('cvc').innerHTML=`<iframe src="${cvUrl}" style="width:100%;height:100%;border:0"></iframe>`;
       $('cvo').textContent='Open in new tab';$('cvo').onclick=()=>window.open(cvUrl,'_blank');
     }else{
-      const txt=await readText(new File([blob],name));
-      $('cvc').innerHTML='<pre>'+esc(txt)+'</pre>';
+      if(/\.docx$/i.test(name)){const r=await mammoth.convertToHtml({arrayBuffer:await blob.arrayBuffer()});$('cvc').innerHTML='<div class="doc">'+r.value+'</div>'}
+      else if(/\.txt$/i.test(name))$('cvc').innerHTML='<pre>'+esc(await blob.text())+'</pre>';
+      else $('cvc').innerHTML='<p style="padding:20px;color:#444">Preview is not available for this file type. Use “Download original”.</p>';
       cvUrl=URL.createObjectURL(blob);
       $('cvo').textContent='Download original';$('cvo').onclick=()=>{const a=document.createElement('a');a.href=cvUrl;a.download=name;a.click()};
     }
@@ -343,9 +344,9 @@ function render(keep){
     <td><input value="${esc(c.name)}" oninput="edit('${c.id}','name',this.value)" onchange="flushSave()"></td>
     <td><input value="${esc(c.phone)}" oninput="edit('${c.id}','phone',this.value)" onchange="flushSave()"></td>
     <td><input value="${esc(c.email)}" oninput="edit('${c.id}','email',this.value)" onchange="flushSave()"></td>
-    <td>${hasCv(c)?`<a href="#" onclick="viewCv('${c.id}');return false" style="color:#6366f1;font-weight:600">📄 ${esc(c.file)}</a>`:esc(c.file)}</td>
+    <td>${hasCv(c)?`<button class="b" onclick="viewCv('${c.id}')">📄 View CV</button>`:'<span style="color:var(--mu)">—</span>'}</td>
     <td>${esc(c.campaign)}</td><td><span class="tag ${c.status==='sent'?'s':''}">${c.status==='sent'?'messaged':'new'}</span></td>
-    <td><button class="b" onclick="openRec('${c.id}')">Open record</button> ${hasCv(c)?`<button onclick="viewCv('${c.id}')">📄 CV</button>`:''} <button class="p" onclick="send('${c.id}')">Send message</button> <button class="d" onclick="del('${c.id}')">✕</button></td></tr>`).join('')
+    <td><button class="b" onclick="openRec('${c.id}')">Open record</button> <button class="p" onclick="send('${c.id}')">Send message</button> <button class="d" onclick="del('${c.id}')">✕</button></td></tr>`).join('')
     ||'<tr><td colspan="8" style="color:var(--mu);padding:20px">No candidates yet. Upload some CVs above.</td></tr>';
 }
 const drop=$('drop'),fi=$('file');
