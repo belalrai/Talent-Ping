@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TalentPing – CV parser & WhatsApp outreach</title>
+<title>TalentPing – CV parser, WhatsApp & email outreach</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -70,11 +70,17 @@ td input{border-color:transparent;background:transparent;padding:6px 8px;min-wid
 #ab{border-radius:16px;padding:32px;max-width:400px;box-shadow:0 24px 70px rgba(0,0,0,.35)}
 #ab h2{background:none;color:var(--tx);-webkit-text-fill-color:currentColor;font-size:26px;letter-spacing:-.4px}
 #toast{border-radius:10px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+.tag.f{background:color-mix(in srgb,var(--bad) 16%,var(--card));color:var(--bad)}
+.seg{display:flex;gap:4px;background:var(--soft);border:1px solid var(--bd);padding:3px;border-radius:10px;width:fit-content;margin-bottom:12px}
+.seg button{border:0;background:transparent;padding:6px 16px;color:var(--mu)}
+.seg button.on{background:var(--card);color:var(--tx);box-shadow:0 1px 2px rgba(0,0,0,.14)}
+button.em{background:#2563eb;border-color:#2563eb;color:#fff}button.em:hover{background:#1d4ed8}button.em:disabled{opacity:.6;cursor:wait}
+td.act{white-space:nowrap}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
-<header><svg width="40" height="40" viewBox="0 0 40 40"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3ed6a8"/><stop offset="1" stop-color="#0b7a5e"/></linearGradient></defs><rect width="40" height="40" rx="11" fill="url(#lg)"/><path d="M11 9h13l6 6v11a3 3 0 0 1-3 3H11a3 3 0 0 1-3-3V12a3 3 0 0 1 3-3z" fill="#fff" opacity=".95"/><circle cx="17" cy="17" r="3" fill="#0b7a5e"/><path d="M11.5 25c.8-3 3-4 5.500-4s4.700 1 5.500 4z" fill="#0b7a5e"/><path d="M24 24h9a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-3l-3 3v-3h-3a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2z" fill="#25d366" stroke="#fff" stroke-width="1.500"/></svg><div><div class="brand">TalentPing</div><div class="tag2">Parse CVs · Ping candidates on WhatsApp</div></div><span id="extb" class="chip" style="cursor:pointer" title="Click to re-check" onclick="pingExt()">WhatsApp extension not detected</span><div id="stats"></div><div id="ua"><span id="who"></span><button onclick="logout()">Sign out</button></div></header>
+<header><svg width="40" height="40" viewBox="0 0 40 40"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3ed6a8"/><stop offset="1" stop-color="#0b7a5e"/></linearGradient></defs><rect width="40" height="40" rx="11" fill="url(#lg)"/><path d="M11 9h13l6 6v11a3 3 0 0 1-3 3H11a3 3 0 0 1-3-3V12a3 3 0 0 1 3-3z" fill="#fff" opacity=".95"/><circle cx="17" cy="17" r="3" fill="#0b7a5e"/><path d="M11.5 25c.8-3 3-4 5.500-4s4.700 1 5.500 4z" fill="#0b7a5e"/><path d="M24 24h9a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-3l-3 3v-3h-3a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2z" fill="#25d366" stroke="#fff" stroke-width="1.500"/></svg><div><div class="brand">TalentPing</div><div class="tag2">Parse CVs · Ping candidates on WhatsApp &amp; email</div></div><span id="extb" class="chip" style="cursor:pointer" title="Click to re-check" onclick="pingExt()">WhatsApp extension not detected</span><div id="stats"></div><div id="ua"><span id="who"></span><button onclick="logout()">Sign out</button></div></header>
 <main>
 <div class="row">
   <div class="card">
@@ -84,25 +90,43 @@ td input{border-color:transparent;background:transparent;padding:6px 8px;min-wid
     <div id="st"></div>
   </div>
   <div class="card">
-    <div class="ct">Message template</div>
-    <label style="margin-top:0">Saved templates</label>
-    <div style="display:flex;gap:6px"><select id="tsel" onchange="pickT()"></select><button onclick="newT()" title="New template">+ New</button><button class="b" onclick="saveT()">💾 Save</button><button class="d" onclick="delT()">🗑</button></div>
-    <label>Campaign name</label><input id="tname" placeholder="e.g. Care Worker – London Oct">
-    <label>Your message — use {first_name} and {full_name}</label>
-    <textarea id="msg">Hello {first_name}, we received your CV and have an opportunity that matches your profile. Are you available to talk?</textarea>
+    <div class="ct">Message templates</div>
+    <div class="seg"><button id="tt_wa" class="on" onclick="setTT('wa')">WhatsApp</button><button id="tt_email" onclick="setTT('email')">Email</button></div>
+    <div id="tp_wa">
+      <label style="margin-top:0">Saved WhatsApp templates</label>
+      <div style="display:flex;gap:6px"><select id="tsel" onchange="pickT('wa')"></select><button onclick="newT('wa')" title="New template">+ New</button><button class="b" onclick="saveT('wa')">💾 Save</button><button class="d" onclick="delT('wa')">🗑</button></div>
+      <label>Campaign name</label><input id="tname" placeholder="e.g. Care Worker – London Oct">
+      <label>Your message — use {first_name} and {full_name}</label>
+      <textarea id="msg">Hello {first_name}, we received your CV and have an opportunity that matches your profile. Are you available to talk?</textarea>
+    </div>
+    <div id="tp_email" style="display:none">
+      <label style="margin-top:0">Saved email templates</label>
+      <div style="display:flex;gap:6px"><select id="etsel" onchange="pickT('email')"></select><button onclick="newT('email')" title="New template">+ New</button><button class="b" onclick="saveT('email')">💾 Save</button><button class="d" onclick="delT('email')">🗑</button></div>
+      <label>Campaign name</label><input id="etname" placeholder="e.g. Care Worker – London Oct (email)">
+      <label>Subject — use {first_name} and {full_name}</label>
+      <input id="esub" value="Job opportunity that matches your profile">
+      <label>Email message — use {first_name} and {full_name}</label>
+      <textarea id="emsg" style="min-height:150px">Hello {first_name},
+
+Thank you for sending us your CV. We have an opportunity that matches your profile. Are you available for a quick call this week?
+
+Kind regards,
+Proactive Outsourcing</textarea>
+      <div style="font-size:12px;color:var(--mu);margin-top:8px">Sent automatically from asher@proactiveoutsourcing.com. No mail app opens.</div>
+    </div>
   </div>
 </div>
 <div class="card">
   <div class="ct">Candidates</div>
   <div class="bar">
     <input id="q" placeholder="Search candidates…">
-    <button onclick="addBlank()">+ Add manually</button><select id="sf" onchange="render()" style="width:auto"><option value="">All status</option><option value="new">New only</option><option value="sent">Messaged only</option></select><button onclick="resetStatus()">🔄 Reset status</button>
+    <button onclick="addBlank()">+ Add manually</button><select id="sf" onchange="render()" style="width:auto"><option value="">All status</option><option value="wa_new">WhatsApp: not sent</option><option value="wa_sent">WhatsApp: sent</option><option value="em_new">Email: not sent</option><option value="em_sent">Email: sent</option><option value="em_failed">Email: failed</option></select><button onclick="resetStatus()">🔄 Reset status</button>
     <button onclick="exportCsv()">Export CSV</button>
     <button onclick="clearAll()">Clear all</button>
     <span id="count" style="color:var(--mu)"></span><span id="sv" style="font-size:12px;font-weight:600"></span>
   </div>
   <div class="tw"><table>
-    <thead><tr><th>First name</th><th>Full name</th><th>Phone</th><th>Email</th><th>CV</th><th>Campaign</th><th>Status</th><th></th></tr></thead>
+    <thead><tr><th>First name</th><th>Full name</th><th>Phone</th><th>Email</th><th>CV</th><th>Campaign</th><th>WhatsApp</th><th>Email</th><th></th></tr></thead>
     <tbody id="tb"></tbody>
   </table></div>
 </div>
@@ -119,11 +143,20 @@ td input{border-color:transparent;background:transparent;padding:6px 8px;min-wid
 <h3>Candidate record</h3><div id="rf" style="color:var(--mu);font-size:12px"></div>
 <div class="g2"><div><label>First name</label><input id="r_first"></div><div><label>Full name</label><input id="r_name"></div>
 <div><label>Phone</label><input id="r_phone"></div><div><label>Email</label><input id="r_email"></div></div>
-<label>Template / campaign</label><select id="r_tsel" onchange="pickRT()"></select>
-<label>Message (edit for this candidate only)</label><textarea id="r_msg"></textarea>
-<label>Notes</label><textarea id="r_notes" style="min-height:60px"></textarea>
+<div class="seg" style="margin-top:14px"><button id="rt_wa" class="on" onclick="setRT('wa')">WhatsApp</button><button id="rt_email" onclick="setRT('email')">Email</button></div>
+<div id="rp_wa">
+<label style="margin-top:0">Template / campaign</label><select id="r_tsel" onchange="pickRT('wa')"></select>
+<label>WhatsApp message (edit for this candidate only)</label><textarea id="r_msg"></textarea>
 <div id="r_st" style="margin-top:8px;color:var(--mu);font-size:13px"></div>
-<div id="r_sv" style="font-size:13px;font-weight:600;min-height:18px;margin-top:6px"></div><div class="btns"><button id="r_cv" onclick="viewCv(cur)">📄 View CV</button><button onclick="$('attf').click()" style="margin-right:auto">📎 Attach CV</button><button onclick="closeRec()">Close</button><button class="b big" onclick="saveRec()">💾 Save</button><button class="p big" onclick="sendRec()">Send message</button></div>
+</div>
+<div id="rp_email" style="display:none">
+<label style="margin-top:0">Email template / campaign</label><select id="r_etsel" onchange="pickRT('email')"></select>
+<label>Subject</label><input id="r_esub">
+<label>Email message (edit for this candidate only)</label><textarea id="r_emsg" style="min-height:140px"></textarea>
+<div id="r_est" style="margin-top:8px;color:var(--mu);font-size:13px"></div>
+</div>
+<label>Notes</label><textarea id="r_notes" style="min-height:60px"></textarea>
+<div id="r_sv" style="font-size:13px;font-weight:600;min-height:18px;margin-top:6px"></div><div class="btns"><button id="r_cv" onclick="viewCv(cur)">📄 View CV</button><button onclick="$('attf').click()" style="margin-right:auto">📎 Attach CV</button><button onclick="closeRec()">Close</button><button class="b big" onclick="saveRec()">💾 Save</button><button id="r_sendwa" class="p big" onclick="sendRec()">Send WhatsApp</button><button id="r_sendem" class="em big" style="display:none" onclick="sendRecEmail()">Send Email</button></div>
 </div></div>
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -136,10 +169,10 @@ const SB_URL='https://alvdbsfxehjuprklrbrz.supabase.co',SB_KEY='eyJhbGciOiJIUzI1
 // =====================================================================
 const CLOUD=!!(SB_URL&&SB_KEY);
 const sb=CLOUD?supabase.createClient(SB_URL,SB_KEY):null;
-let user=null,snap={},ch=null,mode='in',pth={},LF={},T=[],curT='';
-try{if(!CLOUD)T=JSON.parse(localStorage.getItem('tp:tpl')||'[]');curT=localStorage.getItem('tp:cur')||''}catch(e){}
-const row=c=>({id:c.id,first:c.first||'',name:c.name||'',phone:c.phone||'',email:c.email||'',file:c.file||'',status:c.status||'new',notes:c.notes||'',msg:c.msg||'',sent_at:c.sentAt||'',campaign:c.campaign||'',cv_path:c.cvPath||''});
-const fromRow=r=>({id:r.id,first:r.first,name:r.name,phone:r.phone,email:r.email,file:r.file,status:r.status,notes:r.notes,msg:r.msg,sentAt:r.sent_at,campaign:r.campaign||'',cvPath:r.cv_path||''});
+let user=null,snap={},ch=null,mode='in',pth={},LF={},T=[],curT={wa:'',email:''};
+try{if(!CLOUD)T=JSON.parse(localStorage.getItem('tp:tpl')||'[]');curT.wa=localStorage.getItem('tp:cur')||'';curT.email=localStorage.getItem('tp:cure')||''}catch(e){}
+const row=c=>({id:c.id,first:c.first||'',name:c.name||'',phone:c.phone||'',email:c.email||'',file:c.file||'',status:c.status||'new',notes:c.notes||'',msg:c.msg||'',sent_at:c.sentAt||'',campaign:c.campaign||'',cv_path:c.cvPath||'',email_status:c.emailStatus||'new',email_sent_at:c.emailSentAt||'',email_campaign:c.emailCampaign||'',email_subject:c.emailSubject||'',email_msg:c.emailMsg||'',email_error:c.emailError||''});
+const fromRow=r=>({id:r.id,first:r.first,name:r.name,phone:r.phone,email:r.email,file:r.file,status:r.status,notes:r.notes,msg:r.msg,sentAt:r.sent_at,campaign:r.campaign||'',cvPath:r.cv_path||'',emailStatus:r.email_status||'new',emailSentAt:r.email_sent_at||'',emailCampaign:r.email_campaign||'',emailSubject:r.email_subject||'',emailMsg:r.email_msg||'',emailError:r.email_error||''});
 async function pushCloud(){
   let ok=true;const now={},up=[];
   for(const c of C){pth[c.id]=c.cvPath||'';const j=JSON.stringify(row(c));now[c.id]=j;if(snap[c.id]!==j)up.push({...row(c),updated_by:user.email})}
@@ -239,7 +272,7 @@ async function handle(files){
 
 const fmt=(b,c)=>b.replaceAll('{first_name}',c.first||'').replaceAll('{full_name}',c.name||'');
 const tpl=c=>fmt($('msg').value,c);
-const curCampaign=()=>{const t=T.find(x=>x.id===curT);return t?t.campaign:'Custom'};
+const curCampaign=()=>{const t=T.find(x=>x.id===curT.wa);return t?t.campaign:'Custom'};
 const campOf=id=>{const t=T.find(x=>x.id===id);return t?t.campaign:'Custom'};
 let ext=false;
 window.addEventListener('message',e=>{if(e.data&&e.data.type==='CVDESK_READY'){ext=true;const b=$('extb');b.textContent='WhatsApp extension connected';b.style.background='#0b7a5e'}});
@@ -259,12 +292,13 @@ function send(id){
   const c=C.find(x=>x.id===id);if(!c||!c.phone)return alert('No phone number.');
   openWA(waLink(c));c.status='sent';c.campaign=curCampaign();c.sentAt=new Date().toLocaleString();c.msg=tpl(c);save();render();
 }
-function visible(){const q=$('q').value.toLowerCase(),sf=$('sf').value;return C.filter(c=>(!q||((c.name||'')+(c.email||'')+(c.phone||'')+(c.campaign||'')).toLowerCase().includes(q))&&(!sf||(sf==='sent')===(c.status==='sent')))}
+const matchSf=(c,f)=>!f||(f==='wa_new'?c.status!=='sent':f==='wa_sent'?c.status==='sent':f==='em_new'?c.emailStatus!=='sent':f==='em_sent'?c.emailStatus==='sent':f==='em_failed'?c.emailStatus==='failed':true);
+function visible(){const q=$('q').value.toLowerCase(),sf=$('sf').value;return C.filter(c=>(!q||((c.name||'')+(c.email||'')+(c.phone||'')+(c.campaign||'')+(c.emailCampaign||'')).toLowerCase().includes(q))&&matchSf(c,sf))}
 function resetStatus(){
-  const l=visible().filter(c=>c.status==='sent');
+  const l=visible().filter(c=>c.status==='sent'||c.emailStatus==='sent'||c.emailStatus==='failed');
   if(!l.length)return toast('Nothing to reset',1);
-  if(!confirm(`Reset ${l.length} messaged candidate(s) back to "new"? Only the ones currently shown in the list.`))return;
-  l.forEach(c=>{c.status='new';c.sentAt='';c.campaign='';c.msg=''});save();render();toast('✓ Status reset');
+  if(!confirm(`Reset WhatsApp and Email status of ${l.length} candidate(s) back to "pending"? Only the ones currently shown in the list.`))return;
+  l.forEach(c=>{c.status='new';c.sentAt='';c.campaign='';c.msg='';c.emailStatus='new';c.emailSentAt='';c.emailCampaign='';c.emailSubject='';c.emailMsg='';c.emailError=''});save();render();toast('✓ Status reset');
 }
 const hasCv=c=>!!(c.cvPath||LF[c.id]);
 let cvUrl='';
@@ -300,48 +334,60 @@ async function attach(inp){
   c.file=f.name;save();render();$('r_cv').style.display='';$('rf').textContent='CV: '+f.name;toast('✓ CV attached');
 }
 $('cvm').onclick=e=>{if(e.target.id==='cvm')closeCv()};
-function applyT(){const t=T.find(x=>x.id===curT);if(t){$('tname').value=t.campaign;$('msg').value=t.body}}
+const TF={wa:{sel:'tsel',rsel:'r_tsel',name:'tname',body:'msg',key:'tp:cur'},email:{sel:'etsel',rsel:'r_etsel',name:'etname',body:'emsg',key:'tp:cure'}};
+const tList=k=>T.filter(t=>(t.kind||'wa')===k);
+function setTT(k){['wa','email'].forEach(x=>{$('tp_'+x).style.display=x===k?'':'none';$('tt_'+x).classList.toggle('on',x===k)})}
+function applyT(k){const t=T.find(x=>x.id===curT[k]);if(t){const f=TF[k];$(f.name).value=t.campaign;$(f.body).value=t.body;if(k==='email')$('esub').value=t.subject||''}}
 function fillSelects(apply){
-  const o='<option value="">✏️ Custom message (not saved)</option>'+T.map(t=>`<option value="${t.id}">${esc(t.campaign)}</option>`).join('');
-  $('tsel').innerHTML=o;$('r_tsel').innerHTML=o;
-  if(!T.find(x=>x.id===curT))curT='';
-  $('tsel').value=curT;$('r_tsel').value=curT;
-  if(apply)applyT();
+  for(const k of ['wa','email']){
+    const f=TF[k],o='<option value="">✏️ Custom message (not saved)</option>'+tList(k).map(t=>`<option value="${t.id}">${esc(t.campaign)}</option>`).join('');
+    $(f.sel).innerHTML=o;$(f.rsel).innerHTML=o;
+    if(!tList(k).find(x=>x.id===curT[k]))curT[k]='';
+    $(f.sel).value=curT[k];$(f.rsel).value=curT[k];
+    if(apply)applyT(k);
+  }
 }
-function pickT(){curT=$('tsel').value;try{localStorage.setItem('tp:cur',curT)}catch(e){}if(curT)applyT();else $('tname').value=''}
-function pickRT(){const c=C.find(x=>x.id===cur),t=T.find(x=>x.id===$('r_tsel').value);if(c&&t)$('r_msg').value=fmt(t.body,{first:$('r_first').value,name:$('r_name').value})}
-function newT(){curT='';$('tsel').value='';$('tname').value='';$('tname').focus();toast('Write campaign name + message, then press Save')}
+function pickT(k){const f=TF[k];curT[k]=$(f.sel).value;try{localStorage.setItem(f.key,curT[k])}catch(e){}if(curT[k])applyT(k);else $(f.name).value=''}
+function pickRT(k){
+  k=k||'wa';const c=C.find(x=>x.id===cur),t=T.find(x=>x.id===$(TF[k].rsel).value);if(!c||!t)return;
+  const d={first:$('r_first').value,name:$('r_name').value};
+  if(k==='wa')$('r_msg').value=fmt(t.body,d);else{$('r_emsg').value=fmt(t.body,d);$('r_esub').value=fmt(t.subject||'',d)}
+}
+function setRT(k){['wa','email'].forEach(x=>{$('rp_'+x).style.display=x===k?'':'none';$('rt_'+x).classList.toggle('on',x===k)});$('r_sendwa').style.display=k==='wa'?'':'none';$('r_sendem').style.display=k==='email'?'':'none'}
+function newT(k){const f=TF[k];curT[k]='';$(f.sel).value='';$(f.name).value='';$(f.name).focus();toast('Write campaign name + message, then press Save')}
 async function persistT(t){
-  if(CLOUD){const{error}=await sb.from('templates').upsert({id:t.id,campaign:t.campaign,body:t.body,updated_by:user.email});if(error)toast('Template save failed: '+error.message,1)}
+  if(CLOUD){const{error}=await sb.from('templates').upsert({id:t.id,campaign:t.campaign,body:t.body,kind:t.kind||'wa',subject:t.subject||'',updated_by:user.email});if(error)toast('Template save failed: '+error.message,1)}
   else try{localStorage.setItem('tp:tpl',JSON.stringify(T))}catch(e){}
 }
-async function saveT(){
-  const name=$('tname').value.trim(),body=$('msg').value;
+async function saveT(k){
+  const f=TF[k],name=$(f.name).value.trim(),body=$(f.body).value,subject=k==='email'?$('esub').value:'';
   if(!name)return toast('Enter a campaign name first',1);
-  let t=T.find(x=>x.id===curT);
-  if(t){t.campaign=name;t.body=body}else{t={id:uid(),campaign:name,body};T.push(t);curT=t.id}
-  try{localStorage.setItem('tp:cur',curT)}catch(e){}
+  let t=T.find(x=>x.id===curT[k]);
+  if(t){t.campaign=name;t.body=body;t.subject=subject}else{t={id:uid(),campaign:name,body,kind:k,subject};T.push(t);curT[k]=t.id}
+  try{localStorage.setItem(f.key,curT[k])}catch(e){}
   await persistT(t);fillSelects();toast('✓ Template saved');
 }
-async function delT(){
-  const t=T.find(x=>x.id===curT);if(!t)return toast('Select a saved template first',1);
+async function delT(k){
+  const t=T.find(x=>x.id===curT[k]);if(!t)return toast('Select a saved template first',1);
   if(!confirm(`Delete template "${t.campaign}"?`))return;
-  T=T.filter(x=>x!==t);curT='';
+  T=T.filter(x=>x!==t);curT[k]='';
   if(CLOUD){await sb.from('templates').delete().eq('id',t.id)}else try{localStorage.setItem('tp:tpl',JSON.stringify(T))}catch(e){}
   fillSelects();toast('Template deleted');
 }
 async function loadT(apply){
   const{data,error}=await sb.from('templates').select('*').order('created_at');
   if(error){toast('Templates: '+error.message,1);return}
-  T=data.map(r=>({id:r.id,campaign:r.campaign,body:r.body}));fillSelects(apply);
+  T=data.map(r=>({id:r.id,campaign:r.campaign,body:r.body,kind:r.kind||'wa',subject:r.subject||''}));fillSelects(apply);
 }
 let cur=null;
 function openRec(id){
   const c=C.find(x=>x.id===id);if(!c)return;cur=id;
   ['first','name','phone','email'].forEach(k=>$('r_'+k).value=c[k]||'');
-  $('r_tsel').value=T.find(x=>x.id===curT)?curT:'';$('r_msg').value=(c.status==='sent'&&c.msg)?c.msg:tpl(c);$('r_cv').style.display=hasCv(c)?'':'none';$('r_notes').value=c.notes||'';
+  $('r_tsel').value=T.find(x=>x.id===curT.wa)?curT.wa:'';$('r_etsel').value=T.find(x=>x.id===curT.email)?curT.email:'';$('r_esub').value=(c.emailStatus==='sent'&&c.emailSubject)?c.emailSubject:fmt($('esub').value,c);$('r_emsg').value=(c.emailStatus==='sent'&&c.emailMsg)?c.emailMsg:fmt($('emsg').value,c);$('r_msg').value=(c.status==='sent'&&c.msg)?c.msg:tpl(c);$('r_cv').style.display=hasCv(c)?'':'none';$('r_notes').value=c.notes||'';
   $('rf').textContent='CV: '+c.file;
-  $('r_st').textContent=c.status==='sent'?'✓ Messaged'+(c.sentAt?' on '+c.sentAt:''):'Not messaged yet';
+  $('r_st').textContent=c.status==='sent'?'✓ WhatsApp sent'+(c.sentAt?' on '+c.sentAt:''):'WhatsApp: not sent yet';
+  $('r_est').textContent=c.emailStatus==='sent'?'✓ Email sent'+(c.emailSentAt?' on '+c.emailSentAt:''):c.emailStatus==='failed'?'✕ Last email attempt failed: '+(c.emailError||'unknown error'):'Email: not sent yet';
+  setRT('wa');
   $('md').classList.add('on');
 }
 function collectRec(){const c=C.find(x=>x.id===cur);if(!c)return null;['first','name','phone','email'].forEach(k=>c[k]=$('r_'+k).value.trim());c.notes=$('r_notes').value;c.msg=$('r_msg').value;return c}
@@ -360,7 +406,47 @@ function sendRec(){
   if(!c.phone)return alert('Add a phone number first.');
   openWA(waLink(c,c.msg));
   c.status='sent';c.campaign=campOf($('r_tsel').value);c.sentAt=new Date().toLocaleString();save();
-  $('r_st').textContent='✓ Opened in WhatsApp Web — press Send there. Marked as messaged.';
+  $('r_st').textContent='✓ Opened in WhatsApp Web — press Send there. Marked as sent.';
+}
+const validEmail=x=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((x||'').trim());
+const EM=new Set();
+async function sendMail(to,subject,body){
+  if(!CLOUD||!user)throw new Error('Sign in first');
+  const{data,error}=await sb.functions.invoke('send-email',{body:{to:to.trim(),subject,body}});
+  if(error){let m=error.message;try{const j=await error.context.json();if(j&&j.error)m=j.error}catch(e){}throw new Error(m)}
+  if(data&&data.error)throw new Error(data.error);
+}
+async function doEmail(c,subj,body,camp){
+  EM.add(c.id);render();let ok=true;
+  try{
+    await sendMail(c.email,subj,body);
+    Object.assign(c,{emailStatus:'sent',emailSentAt:new Date().toLocaleString(),emailCampaign:camp,emailSubject:subj,emailMsg:body,emailError:''});
+    toast('✓ Email sent to '+c.email);
+  }catch(e){
+    ok=false;Object.assign(c,{emailStatus:'failed',emailError:e.message||'Unknown error'});
+    toast('Email failed: '+c.emailError,1);
+  }
+  EM.delete(c.id);save();render();return ok;
+}
+const askEmail=c=>confirm(c.emailStatus==='sent'?`An email was already sent to ${c.email} on ${c.emailSentAt}. Send another?`:`Send this email to ${c.email} from asher@proactiveoutsourcing.com?`);
+async function sendEmail(id){
+  const c=C.find(x=>x.id===id);if(!c||EM.has(id))return;
+  if(!validEmail(c.email))return alert('No valid email address for this candidate.');
+  const subj=fmt($('esub').value,c).trim(),body=fmt($('emsg').value,c);
+  if(!subj||!body.trim())return alert('Write the email subject and message in the Email template first.');
+  if(!askEmail(c))return;
+  await doEmail(c,subj,body,campOf(curT.email));
+}
+async function sendRecEmail(){
+  const c=C.find(x=>x.id===cur);if(!c||EM.has(c.id))return;
+  collectRec();
+  const subj=$('r_esub').value.trim(),body=$('r_emsg').value;
+  if(!validEmail(c.email))return alert('Add a valid email address first.');
+  if(!subj||!body.trim())return alert('Subject and message cannot be empty.');
+  if(!askEmail(c))return;
+  $('r_est').textContent='Sending…';
+  const ok=await doEmail(c,subj,body,campOf($('r_etsel').value));
+  $('r_est').textContent=ok?'✓ Email sent to '+c.email+' on '+c.emailSentAt:'✕ Failed: '+c.emailError;
 }
 $('md').onclick=e=>{if(e.target.id==='md')closeRec()};
 let tmr=null,pend=false;
@@ -373,17 +459,23 @@ function del(id){C=C.filter(x=>x.id!==id);save();render()}
 function addBlank(){C.unshift({id:uid(),first:'',name:'',phone:'',email:'',file:'manual',status:'new'});save();render()}
 function clearAll(){if(confirm(CLOUD?'Delete ALL candidates for the whole team? This cannot be undone.':'Delete all candidates?')){C=[];save();render()}}
 function exportCsv(){
-  const r=[['First name','Full name','Phone','Email','File','Status'],...C.map(c=>[c.first,c.name,c.phone,c.email,c.file,c.status])];
+  const r=[['First name','Full name','Phone','Email','File','WhatsApp status','Email status'],...C.map(c=>[c.first,c.name,c.phone,c.email,c.file,c.status==='sent'?'sent':'pending',c.emailStatus==='sent'?'sent':c.emailStatus==='failed'?'failed':'pending'])];
   const csv=r.map(x=>x.map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='candidates.csv';a.click();
 }
 const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+function emTag(c){
+  if(EM.has(c.id))return '<span class="tag">sending…</span>';
+  if(c.emailStatus==='sent')return `<span class="tag s" title="${esc('Sent '+(c.emailSentAt||'')+(c.emailCampaign?' · '+c.emailCampaign:''))}">sent</span>`;
+  if(c.emailStatus==='failed')return `<span class="tag f" title="${esc(c.emailError||'Failed')}">failed</span>`;
+  return '<span class="tag">pending</span>';
+}
 function render(keep){
   const q=$('q').value.toLowerCase();
   const list=visible();
   const kb=Math.round(JSON.stringify(C).length/1024);
   $('count').textContent=`${list.length} shown · ${CLOUD?'shared team database':'storage '+kb+' KB of ~5,000 KB'}`;
-  $('stats').innerHTML=`<span class="chip"><b>${C.length}</b> candidates</span><span class="chip"><b>${C.filter(x=>x.status==='sent').length}</b> messaged</span><span class="chip"><b>${C.filter(x=>x.status!=='sent').length}</b> new</span>`;
+  $('stats').innerHTML=`<span class="chip"><b>${C.length}</b> candidates</span><span class="chip"><b>${C.filter(x=>x.status==='sent').length}</b> WhatsApp sent</span><span class="chip"><b>${C.filter(x=>x.emailStatus==='sent').length}</b> emailed</span>`;
   if(keep&&document.activeElement&&document.activeElement.tagName==='INPUT'&&document.activeElement.closest('td'))return;
   $('tb').innerHTML=list.map(c=>`<tr>
     <td><input value="${esc(c.first)}" oninput="edit('${c.id}','first',this.value)" onchange="flushSave()"></td>
@@ -391,9 +483,10 @@ function render(keep){
     <td><input value="${esc(c.phone)}" oninput="edit('${c.id}','phone',this.value)" onchange="flushSave()"></td>
     <td><input value="${esc(c.email)}" oninput="edit('${c.id}','email',this.value)" onchange="flushSave()"></td>
     <td>${hasCv(c)?`<button class="b" onclick="viewCv('${c.id}')">📄 View CV</button>`:'<span style="color:var(--mu)">—</span>'}</td>
-    <td>${esc(c.campaign)}</td><td><span class="tag ${c.status==='sent'?'s':''}">${c.status==='sent'?'messaged':'new'}</span></td>
-    <td><button class="b" onclick="openRec('${c.id}')">Open record</button> <button class="p" onclick="send('${c.id}')">Send message</button> <button class="d" onclick="del('${c.id}')">✕</button></td></tr>`).join('')
-    ||'<tr><td colspan="8" style="color:var(--mu);padding:20px">No candidates yet. Upload some CVs above.</td></tr>';
+    <td>${esc(c.campaign)}</td><td><span class="tag ${c.status==='sent'?'s':''}" title="${esc(c.sentAt)}">${c.status==='sent'?'sent':'pending'}</span></td>
+    <td>${emTag(c)}</td>
+    <td class="act"><button class="b" onclick="openRec('${c.id}')">Open record</button> <button class="p" onclick="send('${c.id}')">Send WhatsApp</button> <button class="em" ${EM.has(c.id)?'disabled':''} onclick="sendEmail('${c.id}')">Send Email</button> <button class="d" onclick="del('${c.id}')">✕</button></td></tr>`).join('')
+    ||'<tr><td colspan="9" style="color:var(--mu);padding:20px">No candidates yet. Upload some CVs above.</td></tr>';
 }
 const drop=$('drop'),fi=$('file');
 drop.onclick=()=>fi.click();fi.onchange=()=>{handle([...fi.files]);fi.value=''};
