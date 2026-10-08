@@ -12,6 +12,7 @@
 @media(prefers-color-scheme:dark){:root{--bg:#14171a;--card:#1d2125;--tx:#e8eaed;--mu:#9aa0a6;--bd:#2d3338;--ac:#25d366}}
 *{box-sizing:border-box}body{margin:0;font:14px system-ui,sans-serif;background:var(--bg);color:var(--tx)}
 header{padding:14px 24px;background:linear-gradient(120deg,#6366f1,#8b5cf6 45%,#ec4899);color:#fff;display:flex;align-items:center;gap:12px}.brand{font-size:22px;font-weight:800;letter-spacing:-.3px}.tag2{font-size:12px;opacity:.9}#extb{margin-left:auto}#stats{display:flex;gap:8px;flex-wrap:wrap}.chip{background:#ffffff2e;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600}.card{border-top:3px solid #6366f1}.card:nth-child(2){border-top-color:#ec4899}th{background:#6366f118;color:#6366f1}button.b{background:#6366f1;color:#fff;border-color:#6366f1}button.d{color:#ef4444;border-color:#ef444455}#drop{background:linear-gradient(135deg,#6366f10d,#25d3660d)}#drop:hover{border-color:#6366f1}#auth{position:fixed;inset:0;background:linear-gradient(120deg,#6366f1,#8b5cf6 45%,#ec4899);display:none;align-items:center;justify-content:center;z-index:30;padding:16px}#auth.on{display:flex}#ab{background:var(--card);border-radius:14px;padding:24px;width:100%;max-width:380px}#ab h2{margin:0 0 2px;font-size:24px;background:linear-gradient(90deg,#6366f1,#ec4899);-webkit-background-clip:text;background-clip:text;color:transparent}.tabs{display:flex;gap:6px;margin:14px 0 4px}.tabs button{flex:1}#a_msg{color:#ef4444;font-size:13px;margin-top:8px;min-height:18px}#ua{display:none;align-items:center;gap:8px;font-size:12px}#ua button{background:#ffffff2e;color:#fff;border-color:#ffffff55}
+#cvm{position:fixed;inset:0;background:#000a;display:none;align-items:center;justify-content:center;padding:12px;z-index:25}#cvm.on{display:flex}#cvb{background:var(--card);border-radius:12px;width:100%;max-width:960px;height:92vh;display:flex;flex-direction:column;padding:12px}#cvc{flex:1;overflow:auto;border:1px solid var(--bd);border-radius:8px;background:#fff}#cvc pre{margin:0;padding:16px;white-space:pre-wrap;font:13px/1.5 system-ui,sans-serif;color:#111}
 #toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#16a34a;color:#fff;padding:9px 18px;border-radius:8px;display:none;z-index:20}
 main{max-width:1200px;margin:0 auto;padding:20px;display:grid;gap:16px}
 .card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:16px}
@@ -52,7 +53,7 @@ td input{padding:4px 6px;min-width:110px}.tag{font-size:11px;padding:2px 8px;bor
     <button onclick="addBlank()">+ Add manually</button><select id="sf" onchange="render()" style="width:auto"><option value="">All status</option><option value="new">New only</option><option value="sent">Messaged only</option></select><button onclick="resetStatus()">🔄 Reset status</button>
     <button onclick="exportCsv()">Export CSV</button>
     <button onclick="clearAll()">Clear all</button>
-    <span id="count" style="color:var(--mu)"></span>
+    <span id="count" style="color:var(--mu)"></span><span id="sv" style="font-size:12px;font-weight:600"></span>
   </div>
   <div class="tw"><table>
     <thead><tr><th>First name</th><th>Full name</th><th>Phone</th><th>Email</th><th>CV file</th><th>Campaign</th><th>Status</th><th></th></tr></thead>
@@ -66,6 +67,8 @@ td input{padding:4px 6px;min-width:110px}.tag{font-size:11px;padding:2px 8px;bor
 <label>Email (your username)</label><input id="a_email" type="email" autocomplete="username">
 <label>Password (6+ characters)</label><input id="a_pw" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')authGo()">
 <div id="a_msg"></div><button id="a_go" class="p big" style="width:100%;margin-top:8px" onclick="authGo()">Sign in</button></div></div>
+<div id="cvm"><div id="cvb"><div class="bar"><b id="cvt" style="flex:1"></b><button id="cvo"></button><button onclick="closeCv()">✕ Close</button></div><div id="cvc"></div></div></div>
+<input id="attf" type="file" accept=".pdf,.docx,.txt" hidden onchange="attach(this)">
 <div id="toast"></div><div id="md"><div id="box">
 <h3>Candidate record</h3><div id="rf" style="color:var(--mu);font-size:12px"></div>
 <div class="g2"><div><label>First name</label><input id="r_first"></div><div><label>Full name</label><input id="r_name"></div>
@@ -74,7 +77,7 @@ td input{padding:4px 6px;min-width:110px}.tag{font-size:11px;padding:2px 8px;bor
 <label>Message (edit for this candidate only)</label><textarea id="r_msg"></textarea>
 <label>Notes</label><textarea id="r_notes" style="min-height:60px"></textarea>
 <div id="r_st" style="margin-top:8px;color:var(--mu);font-size:13px"></div>
-<div class="btns"><button id="r_cv" onclick="viewCv(cur)" style="margin-right:auto">📄 View CV</button><button onclick="closeRec()">Close</button><button class="b big" onclick="saveRec()">💾 Save</button><button class="p big" onclick="sendRec()">Send message</button></div>
+<div id="r_sv" style="font-size:13px;font-weight:600;min-height:18px;margin-top:6px"></div><div class="btns"><button id="r_cv" onclick="viewCv(cur)">📄 View CV</button><button onclick="$('attf').click()" style="margin-right:auto">📎 Attach CV</button><button onclick="closeRec()">Close</button><button class="b big" onclick="saveRec()">💾 Save</button><button class="p big" onclick="sendRec()">Send message</button></div>
 </div></div>
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -92,15 +95,16 @@ try{if(!CLOUD)T=JSON.parse(localStorage.getItem('tp:tpl')||'[]');curT=localStora
 const row=c=>({id:c.id,first:c.first||'',name:c.name||'',phone:c.phone||'',email:c.email||'',file:c.file||'',status:c.status||'new',notes:c.notes||'',msg:c.msg||'',sent_at:c.sentAt||'',campaign:c.campaign||'',cv_path:c.cvPath||''});
 const fromRow=r=>({id:r.id,first:r.first,name:r.name,phone:r.phone,email:r.email,file:r.file,status:r.status,notes:r.notes,msg:r.msg,sentAt:r.sent_at,campaign:r.campaign||'',cvPath:r.cv_path||''});
 async function pushCloud(){
-  const now={},up=[];
+  let ok=true;const now={},up=[];
   for(const c of C){pth[c.id]=c.cvPath||'';const j=JSON.stringify(row(c));now[c.id]=j;if(snap[c.id]!==j)up.push({...row(c),updated_by:user.email})}
   const del=Object.keys(snap).filter(id=>!(id in now));snap=now;
-  if(up.length){const{error}=await sb.from('candidates').upsert(up);if(error)toast('Save failed: '+error.message,1)}
-  if(del.length){const{error}=await sb.from('candidates').delete().in('id',del);if(error)toast('Delete failed: '+error.message,1);const gone=del.map(id=>pth[id]).filter(Boolean);if(gone.length)sb.storage.from('cvs').remove(gone)}
+  if(up.length){const{error}=await sb.from('candidates').upsert(up);if(error){toast('Save failed: '+error.message,1);ok=false}}
+  if(del.length){const{error}=await sb.from('candidates').delete().in('id',del);if(error){toast('Delete failed: '+error.message,1);ok=false}const gone=del.map(id=>pth[id]).filter(Boolean);if(gone.length)sb.storage.from('cvs').remove(gone)}
+  return ok;
 }
-const save=()=>{
-  if(CLOUD){if(user)pushCloud();return}
-  try{localStorage.setItem(KEY,JSON.stringify(C))}catch(e){$('st').textContent='Storage full or unavailable.'}
+const save=async()=>{
+  if(CLOUD)return user?await pushCloud():false;
+  try{localStorage.setItem(KEY,JSON.stringify(C));return true}catch(e){$('st').textContent='Storage full or unavailable.';return false}
 };
 async function load(){
   let all=[],from=0;
@@ -125,7 +129,7 @@ function enter(u){
   user=u;$('auth').classList.remove('on');$('ua').style.display='flex';
   $('who').textContent=(u.user_metadata&&u.user_metadata.full_name)||u.email;
   load();loadT(true);
-  if(!ch)ch=sb.channel('cand').on('postgres_changes',{event:'*',schema:'public',table:'candidates'},()=>{if(!cur&&!(document.activeElement&&document.activeElement.closest('td')))load()}).subscribe();
+  if(!ch)ch=sb.channel('cand').on('postgres_changes',{event:'*',schema:'public',table:'candidates'},()=>{if(!cur&&!pend&&!(document.activeElement&&document.activeElement.closest('td')))load()}).subscribe();
 }
 async function boot(){
   if(!CLOUD){fillSelects(true);render();return}
@@ -137,7 +141,7 @@ async function boot(){
     if(!ses&&user){user=null;C=[];snap={};if(ch){sb.removeChannel(ch);ch=null}$('ua').style.display='none';$('auth').classList.add('on');render()}
   });
 }
-window.addEventListener('focus',()=>{if(CLOUD&&user&&!cur){load();loadT()}});
+window.addEventListener('focus',()=>{if(CLOUD&&user&&!cur&&!pend){load();loadT()}});
 const uid=()=>Math.random().toString(36).slice(2,10);
 
 async function readText(f){
@@ -217,17 +221,38 @@ function resetStatus(){
   l.forEach(c=>{c.status='new';c.sentAt='';c.campaign='';c.msg=''});save();render();toast('✓ Status reset');
 }
 const hasCv=c=>!!(c.cvPath||LF[c.id]);
+let cvUrl='';
+function closeCv(){$('cvm').classList.remove('on');$('cvc').innerHTML='';if(cvUrl){URL.revokeObjectURL(cvUrl);cvUrl=''}}
 async function viewCv(id){
   const c=C.find(x=>x.id===id);if(!c)return;
-  const w=window.open('','_blank');
+  if(cvUrl){URL.revokeObjectURL(cvUrl);cvUrl=''}
+  $('cvt').textContent=(c.name||'Candidate')+' — '+(c.file||'');$('cvo').style.display='none';
+  $('cvc').innerHTML='<p style="padding:16px;color:#666">Loading CV…</p>';$('cvm').classList.add('on');
   try{
-    let url;
-    if(c.cvPath&&CLOUD){const{data,error}=await sb.storage.from('cvs').createSignedUrl(c.cvPath,600);if(error)throw error;url=data.signedUrl}
-    else if(LF[id])url=URL.createObjectURL(LF[id]);
-    else throw new Error('No CV file stored for this candidate');
-    (w||window).location=url;
-  }catch(e){if(w)w.close();toast(e.message||'Could not open CV',1)}
+    let blob=LF[id]||null;
+    if(!blob&&c.cvPath&&CLOUD){const{data,error}=await sb.storage.from('cvs').download(c.cvPath);if(error)throw error;blob=data}
+    if(!blob)throw new Error('No CV file stored for this candidate. Use 📎 Attach CV in the record.');
+    const name=c.file||c.cvPath||'cv.pdf';
+    if(/\.pdf$/i.test(name)){
+      cvUrl=URL.createObjectURL(new Blob([blob],{type:'application/pdf'}));
+      $('cvc').innerHTML=`<iframe src="${cvUrl}" style="width:100%;height:100%;border:0"></iframe>`;
+      $('cvo').textContent='Open in new tab';$('cvo').onclick=()=>window.open(cvUrl,'_blank');
+    }else{
+      const txt=await readText(new File([blob],name));
+      $('cvc').innerHTML='<pre>'+esc(txt)+'</pre>';
+      cvUrl=URL.createObjectURL(blob);
+      $('cvo').textContent='Download original';$('cvo').onclick=()=>{const a=document.createElement('a');a.href=cvUrl;a.download=name;a.click()};
+    }
+    $('cvo').style.display='';
+  }catch(e){closeCv();toast(e.message||'Could not open CV',1)}
 }
+async function attach(inp){
+  const f=inp.files[0];inp.value='';const c=C.find(x=>x.id===cur);if(!f||!c)return;
+  if(CLOUD&&user){const p=c.id+'_'+f.name.replace(/[^\w.\-]/g,'_');const{error}=await sb.storage.from('cvs').upload(p,f,{upsert:true});if(error)return toast('Upload failed: '+error.message,1);c.cvPath=p}
+  else LF[c.id]=f;
+  c.file=f.name;save();render();$('r_cv').style.display='';$('rf').textContent='CV: '+f.name;toast('✓ CV attached');
+}
+$('cvm').onclick=e=>{if(e.target.id==='cvm')closeCv()};
 function applyT(){const t=T.find(x=>x.id===curT);if(t){$('tname').value=t.campaign;$('msg').value=t.body}}
 function fillSelects(apply){
   const o='<option value="">✏️ Custom message (not saved)</option>'+T.map(t=>`<option value="${t.id}">${esc(t.campaign)}</option>`).join('');
@@ -272,7 +297,9 @@ function openRec(id){
   $('r_st').textContent=c.status==='sent'?'✓ Messaged'+(c.sentAt?' on '+c.sentAt:''):'Not messaged yet';
   $('md').classList.add('on');
 }
-function closeRec(){$('md').classList.remove('on');cur=null;render()}
+function collectRec(){const c=C.find(x=>x.id===cur);if(!c)return null;['first','name','phone','email'].forEach(k=>c[k]=$('r_'+k).value.trim());c.notes=$('r_notes').value;c.msg=$('r_msg').value;return c}
+['first','name','phone','email','notes','msg'].forEach(k=>$('r_'+k).addEventListener('input',()=>{if(collectRec())later()}));
+function closeRec(){if(collectRec())flushSave();$('md').classList.remove('on');cur=null;render()}
 function toast(t,bad){const e=$('toast');e.style.background=bad?'#dc2626':'#16a34a';e.textContent=t;e.style.display='block';setTimeout(()=>e.style.display='none',1800)}
 function saveRec(){
   const c=C.find(x=>x.id===cur);if(!c)return;
@@ -289,7 +316,12 @@ function sendRec(){
   $('r_st').textContent='✓ Opened in WhatsApp Web — press Send there. Marked as messaged.';
 }
 $('md').onclick=e=>{if(e.target.id==='md')closeRec()};
-function edit(id,k,v){const c=C.find(x=>x.id===id);c[k]=v;if(k==='name'&&!c._f){c.first=v.split(' ')[0]}if(k==='first')c._f=1;save();render(true)}
+let tmr=null,pend=false;
+function setSaved(ok){const a=[$('sv'),$('r_sv')];a.forEach(x=>{if(x){x.textContent=ok?'✓ Saved':'⚠ Not saved';x.style.color=ok?'#16a34a':'#dc2626'}});setTimeout(()=>a.forEach(x=>{if(x)x.textContent=''}),2500)}
+async function flushSave(){clearTimeout(tmr);pend=false;setSaved(await save())}
+function later(){pend=true;clearTimeout(tmr);tmr=setTimeout(flushSave,700)}
+function edit(id,k,v){const c=C.find(x=>x.id===id);if(!c)return;c[k]=v;if(k==='name'&&!c._f)c.first=v.split(' ')[0];if(k==='first')c._f=1;later()}
+window.addEventListener('beforeunload',e=>{if(pend){flushSave();e.preventDefault();e.returnValue=''}});
 function del(id){C=C.filter(x=>x.id!==id);save();render()}
 function addBlank(){C.unshift({id:uid(),first:'',name:'',phone:'',email:'',file:'manual',status:'new'});save();render()}
 function clearAll(){if(confirm(CLOUD?'Delete ALL candidates for the whole team? This cannot be undone.':'Delete all candidates?')){C=[];save();render()}}
@@ -307,11 +339,11 @@ function render(keep){
   $('stats').innerHTML=`<span class="chip">👥 ${C.length} candidates</span><span class="chip">✅ ${C.filter(x=>x.status==='sent').length} messaged</span><span class="chip">🆕 ${C.filter(x=>x.status!=='sent').length} new</span>`;
   if(keep&&document.activeElement&&document.activeElement.tagName==='INPUT'&&document.activeElement.closest('td'))return;
   $('tb').innerHTML=list.map(c=>`<tr>
-    <td><input value="${esc(c.first)}" onchange="edit('${c.id}','first',this.value)"></td>
-    <td><input value="${esc(c.name)}" onchange="edit('${c.id}','name',this.value)"></td>
-    <td><input value="${esc(c.phone)}" onchange="edit('${c.id}','phone',this.value)"></td>
-    <td><input value="${esc(c.email)}" onchange="edit('${c.id}','email',this.value)"></td>
-    <td>${esc(c.file)}</td>
+    <td><input value="${esc(c.first)}" oninput="edit('${c.id}','first',this.value)" onchange="flushSave()"></td>
+    <td><input value="${esc(c.name)}" oninput="edit('${c.id}','name',this.value)" onchange="flushSave()"></td>
+    <td><input value="${esc(c.phone)}" oninput="edit('${c.id}','phone',this.value)" onchange="flushSave()"></td>
+    <td><input value="${esc(c.email)}" oninput="edit('${c.id}','email',this.value)" onchange="flushSave()"></td>
+    <td>${hasCv(c)?`<a href="#" onclick="viewCv('${c.id}');return false" style="color:#6366f1;font-weight:600">📄 ${esc(c.file)}</a>`:esc(c.file)}</td>
     <td>${esc(c.campaign)}</td><td><span class="tag ${c.status==='sent'?'s':''}">${c.status==='sent'?'messaged':'new'}</span></td>
     <td><button class="b" onclick="openRec('${c.id}')">Open record</button> ${hasCv(c)?`<button onclick="viewCv('${c.id}')">📄 CV</button>`:''} <button class="p" onclick="send('${c.id}')">Send message</button> <button class="d" onclick="del('${c.id}')">✕</button></td></tr>`).join('')
     ||'<tr><td colspan="8" style="color:var(--mu);padding:20px">No candidates yet. Upload some CVs above.</td></tr>';
