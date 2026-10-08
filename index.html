@@ -69,6 +69,7 @@ td input{border-color:transparent;background:transparent;padding:6px 8px;min-wid
 #auth{background:radial-gradient(1100px 600px at 15% 0%,#1f5668 0,#13293d 62%)}
 #ab{border-radius:16px;padding:32px;max-width:400px;box-shadow:0 24px 70px rgba(0,0,0,.35)}
 #ab h2{background:none;color:var(--tx);-webkit-text-fill-color:currentColor;font-size:26px;letter-spacing:-.4px}
+#a_forgot{font-size:12.5px;color:var(--ac);font-weight:600;text-decoration:none;display:inline-block;margin-top:10px}#a_forgot:hover{text-decoration:underline}.or{display:flex;align-items:center;gap:10px;color:var(--mu);font-size:12px;margin:18px 0 10px}.or::before,.or::after{content:'';flex:1;height:1px;background:var(--bd)}.soc{display:grid;grid-template-columns:1fr 1fr;gap:8px}.soc button{display:flex;align-items:center;justify-content:center;gap:8px;padding:9px 8px}
 #toast{border-radius:10px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.2)}
 .tag.f{background:color-mix(in srgb,var(--bad) 16%,var(--card));color:var(--bad)}
 .seg{display:flex;gap:4px;background:var(--soft);border:1px solid var(--bd);padding:3px;border-radius:10px;width:fit-content;margin-bottom:12px}
@@ -132,11 +133,17 @@ Proactive Outsourcing</textarea>
 </div>
 </main>
 <div id="auth"><div id="ab"><h2>TalentPing</h2><div style="color:var(--mu);font-size:13px">Team sign in</div>
-<div class="tabs"><button id="a_t_in" class="b" onclick="setMode('in')">Sign in</button><button id="a_t_up" onclick="setMode('up')">Sign up</button></div>
+<div class="tabs" id="a_tabs"><button id="a_t_in" class="b" onclick="setMode('in')">Sign in</button><button id="a_t_up" onclick="setMode('up')">Sign up</button></div>
 <div id="a_name_w" style="display:none"><label>Your name</label><input id="a_name"></div>
-<label>Email (your username)</label><input id="a_email" type="email" autocomplete="username">
-<label>Password (6+ characters)</label><input id="a_pw" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')authGo()">
-<div id="a_msg"></div><button id="a_go" class="p big" style="width:100%;margin-top:8px" onclick="authGo()">Sign in</button></div></div>
+<div id="a_email_w"><label>Email (your username)</label><input id="a_email" type="email" autocomplete="username"></div>
+<label id="a_pw_l">Password (6+ characters)</label><input id="a_pw" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')authGo()">
+<a href="#" id="a_forgot" onclick="forgot();return false">Forgot password?</a>
+<div id="a_msg"></div><button id="a_go" class="p big" style="width:100%;margin-top:8px" onclick="authGo()">Sign in</button>
+<div id="a_soc"><div class="or"><span>or continue with</span></div><div class="soc">
+<button onclick="oauth('google')"><svg width="16" height="16" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.2 5.5-4.7 7.2l7.3 5.7c4.3-4 6.7-9.8 6.7-17.4z"/><path fill="#FBBC05" d="M10.5 28.7a14.5 14.5 0 0 1 0-9.4l-7.9-6.1A24 24 0 0 0 0 24c0 3.9.9 7.5 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.3-5.7c-2 1.4-4.6 2.3-8.6 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg>Google</button>
+<button onclick="oauth('azure')"><svg width="16" height="16" viewBox="0 0 24 24"><path fill="#F25022" d="M1 1h10v10H1z"/><path fill="#7FBA00" d="M13 1h10v10H13z"/><path fill="#00A4EF" d="M1 13h10v10H1z"/><path fill="#FFB900" d="M13 13h10v10H13z"/></svg>Microsoft / Outlook</button>
+</div></div>
+</div></div>
 <div id="cvm"><div id="cvb"><div class="bar"><b id="cvt" style="flex:1"></b><button id="cvo"></button><button onclick="closeCv()">✕ Close</button></div><div id="cvc"></div></div></div>
 <input id="attf" type="file" accept=".pdf,.docx,.txt" hidden onchange="attach(this)">
 <div id="toast"></div><div id="md"><div id="box">
@@ -169,7 +176,7 @@ const SB_URL='https://alvdbsfxehjuprklrbrz.supabase.co',SB_KEY='eyJhbGciOiJIUzI1
 // =====================================================================
 const CLOUD=!!(SB_URL&&SB_KEY);
 const sb=CLOUD?supabase.createClient(SB_URL,SB_KEY):null;
-let user=null,snap={},ch=null,mode='in',pth={},LF={},T=[],curT={wa:'',email:''};
+let user=null,recovering=/type=recovery/.test(location.hash),snap={},ch=null,mode='in',pth={},LF={},T=[],curT={wa:'',email:''};
 try{if(!CLOUD)T=JSON.parse(localStorage.getItem('tp:tpl')||'[]');curT.wa=localStorage.getItem('tp:cur')||'';curT.email=localStorage.getItem('tp:cure')||''}catch(e){}
 const row=c=>({id:c.id,first:c.first||'',name:c.name||'',phone:c.phone||'',email:c.email||'',file:c.file||'',status:c.status||'new',notes:c.notes||'',msg:c.msg||'',sent_at:c.sentAt||'',campaign:c.campaign||'',cv_path:c.cvPath||'',email_status:c.emailStatus||'new',email_sent_at:c.emailSentAt||'',email_campaign:c.emailCampaign||'',email_subject:c.emailSubject||'',email_msg:c.emailMsg||'',email_error:c.emailError||''});
 const fromRow=r=>({id:r.id,first:r.first,name:r.name,phone:r.phone,email:r.email,file:r.file,status:r.status,notes:r.notes,msg:r.msg,sentAt:r.sent_at,campaign:r.campaign||'',cvPath:r.cv_path||'',emailStatus:r.email_status||'new',emailSentAt:r.email_sent_at||'',emailCampaign:r.email_campaign||'',emailSubject:r.email_subject||'',emailMsg:r.email_msg||'',emailError:r.email_error||''});
@@ -194,19 +201,53 @@ async function load(){
   }
   C=all.map(fromRow);snap={};pth={};C.forEach(c=>pth[c.id]=c.cvPath||'');C.forEach(c=>snap[c.id]=JSON.stringify(row(c)));render();
 }
-function setMode(m){mode=m;$('a_name_w').style.display=m==='up'?'block':'none';$('a_go').textContent=m==='up'?'Create account':'Sign in';$('a_t_in').className=m==='in'?'b':'';$('a_t_up').className=m==='up'?'b':'';$('a_msg').textContent=''}
+function setMode(m){
+  mode=m;const rec=m==='rec';
+  $('a_tabs').style.display=rec?'none':'';$('a_email_w').style.display=rec?'none':'';
+  $('a_name_w').style.display=m==='up'?'block':'none';
+  $('a_pw_l').textContent=rec?'New password (6+ characters)':'Password (6+ characters)';
+  $('a_pw').autocomplete=(rec||m==='up')?'new-password':'current-password';
+  $('a_go').textContent=rec?'Set new password':m==='up'?'Create account':'Sign in';
+  $('a_t_in').className=m==='in'?'b':'';$('a_t_up').className=m==='up'?'b':'';
+  $('a_forgot').style.display=m==='in'?'inline-block':'none';$('a_soc').style.display=rec?'none':'';
+  $('a_msg').textContent='';$('a_msg').style.color='';
+}
 async function authGo(){
-  const email=$('a_email').value.trim(),password=$('a_pw').value;
+  $('a_msg').style.color='';const pw=$('a_pw').value;
+  if(mode==='rec'){
+    if(pw.length<6){$('a_msg').textContent='Password must be at least 6 characters.';return}
+    $('a_msg').textContent='Please wait…';
+    const{error}=await sb.auth.updateUser({password:pw});
+    if(error){$('a_msg').textContent=error.message;return}
+    recovering=false;history.replaceState(null,'',location.pathname);$('a_pw').value='';setMode('in');
+    const{data}=await sb.auth.getSession();if(data.session)enter(data.session.user);
+    return;
+  }
+  const email=$('a_email').value.trim(),password=pw;
   if(!email||password.length<6){$('a_msg').textContent='Enter your email and a password of 6+ characters.';return}
   $('a_msg').textContent='Please wait…';
   const r=mode==='up'?await sb.auth.signUp({email,password,options:{data:{full_name:$('a_name').value.trim()}}}):await sb.auth.signInWithPassword({email,password});
   if(r.error){$('a_msg').textContent=r.error.message;return}
   $('a_msg').textContent=(mode==='up'&&!r.data.session)?'Account created. Confirm via the email we sent, then sign in.':'';
 }
+async function forgot(){
+  const email=$('a_email').value.trim();$('a_msg').style.color='';
+  if(!email){$('a_msg').textContent='Type your email above first, then click Forgot password.';return}
+  $('a_msg').textContent='Sending…';
+  const{error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});
+  if(error){$('a_msg').textContent=error.message;return}
+  $('a_msg').style.color='var(--ok)';$('a_msg').textContent='If an account exists for this email, a reset link is on its way. Check your inbox and spam folder.';
+}
+async function oauth(p){
+  $('a_msg').style.color='';$('a_msg').textContent='';
+  const o={redirectTo:location.origin+location.pathname};if(p==='azure')o.scopes='email';
+  const{error}=await sb.auth.signInWithOAuth({provider:p,options:o});
+  if(error)$('a_msg').textContent=error.message;
+}
 async function logout(){await sb.auth.signOut()}
 function enter(u){
   user=u;$('auth').classList.remove('on');$('ua').style.display='flex';
-  $('who').textContent=(u.user_metadata&&u.user_metadata.full_name)||u.email;
+  $('who').textContent=(u.user_metadata&&(u.user_metadata.full_name||u.user_metadata.name))||u.email;
   load();loadT(true);
   if(!ch)ch=sb.channel('cand').on('postgres_changes',{event:'*',schema:'public',table:'candidates'},()=>{if(!cur&&!pend&&!(document.activeElement&&document.activeElement.closest('td')))load()}).subscribe();
 }
@@ -214,9 +255,11 @@ async function boot(){
   if(!CLOUD){fillSelects(true);render();return}
   $('auth').classList.add('on');
   const{data}=await sb.auth.getSession();
-  if(data.session)enter(data.session.user);
+  const he=new URLSearchParams(location.hash.slice(1)).get('error_description');if(he)$('a_msg').textContent=he.replace(/\+/g,' ');
+  if(recovering)setMode('rec');else if(data.session)enter(data.session.user);
   sb.auth.onAuthStateChange((ev,ses)=>{
-    if(ses&&!user)enter(ses.user);
+    if(ev==='PASSWORD_RECOVERY'){recovering=true;setMode('rec');return}
+    if(ses&&!user&&!recovering)enter(ses.user);
     if(!ses&&user){user=null;C=[];snap={};if(ch){sb.removeChannel(ch);ch=null}$('ua').style.display='none';$('auth').classList.add('on');render()}
   });
 }
