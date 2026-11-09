@@ -177,7 +177,7 @@ let C=[];
 try{C=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){}
 const $=id=>document.getElementById(id);
 // ====== PASTE YOUR SUPABASE DETAILS HERE (see README-DEPLOY.md) ======
-const SB_URL='https://alvdbsfxehjuprklrbrz.supabase.co',SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFsdmRic2Z4ZWhqdXBya2xyYnJ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEzOTM3NDIsImV4cCI6MjEwNjk2OTc0Mn0.0bVsd0AzhavC51_gv3dtTzgdaYWCSPMf0OKAb3isGtw';
+const SB_URL='https://hqgriakckwfmdeaqlayi.supabase.co',SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhxZ3JpYWtja3dmbWRlYXFsYXlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQyMTQxMTcsImV4cCI6MjEwOTc5MDExN30.E9oWVGANgUOsn7wBltQtRRG1Baefq8puDljtpXeEtLk';
 // =====================================================================
 const CLOUD=!!(SB_URL&&SB_KEY);
 const sb=CLOUD?supabase.createClient(SB_URL,SB_KEY):null;
